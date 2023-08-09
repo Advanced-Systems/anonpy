@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from .anonpy import AnonPy
-from .__main__ import (
+from .metadata import (
     __package__,
     __version__,
     __license__,

@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
 
 import sys
-from importlib.metadata import metadata
 
+from anonpy import AnonPy
 from .cli import build_parser
-from .internals import ConfigHandler, unique
+from .internals import ConfigHandler
+from .metadata import __package__, __version__
 
-__meta_data = metadata("anonpy")
-__package__ = __meta_data["Name"]
-__version__ = __meta_data["Version"]
-__license__ = __meta_data["License"]
-__credits__ = unique([
-    __meta_data["Author"],
-    __meta_data["Maintainer"],
-])
 
 def cli() -> None:
     print(f"{__package__}, {__version__}")
