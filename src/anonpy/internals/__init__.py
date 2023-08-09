@@ -2,5 +2,5 @@
 
 from .confighandler import ConfigHandler
 from .loghandler import LogHandler
-from .requesthandler import RequestHandler
+from .request_handler import RequestHandler
 from .utils import unique
