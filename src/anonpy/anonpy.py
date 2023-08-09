@@ -65,7 +65,7 @@ class AnonPy(RequestHandler, LogHandler):
         }
 
     @staticmethod
-    def __callback(monitor: MultipartEncoderMonitor, tqdm_handler: tqdm):
+    def __callback(monitor: MultipartEncoderMonitor, tqdm_handler: tqdm) -> None:
         """
         Define a multi part encoder monitor callback function for the upload method.
         """

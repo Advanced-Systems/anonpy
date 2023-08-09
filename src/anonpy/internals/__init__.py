@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from .confighandler import ConfigHandler
-from .loghandler import LogHandler
+from .config_handler import ConfigHandler
+from .log_handler import LogHandler
 from .request_handler import RequestHandler
 from .utils import unique

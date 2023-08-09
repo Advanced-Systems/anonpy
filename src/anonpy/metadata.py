@@ -2,7 +2,7 @@
 
 from importlib.metadata import metadata
 
-from .internals import ConfigHandler, unique
+from .internals import unique
 
 __meta_data = metadata("anonpy")
 __package__ = __meta_data["Name"]

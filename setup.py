@@ -3,7 +3,7 @@ from typing import Optional, List
 
 #region helper functions
 
-def read_file(path: str, split: Optional[bool]=False) -> List[str] | str:
+def read_file(path: str, split: Optional[bool]=False) -> str | List[str]:
     with open(path, mode='r', encoding="utf-8") as file_handler:
         return file_handler.readlines() if split else file_handler.read()
 
