@@ -22,10 +22,10 @@ setup(
     description="A slick and modern Python package for anonymous file sharing",
     long_description=read_file("README.md"),
     long_description_content_type="text/markdown",
-    url="https://github.com/stefangreve/anonpy",
+    url="https://github.com/advanced-systems/anonpy",
     project_urls={
-        "Source Code": "https://github.com/stefangreve/anonpy",
-        "Bug Reports": "https://github.com/stefangreve/anonpy/issues"
+        "Source Code": "https://github.com/advanced-systems/anonpy",
+        "Bug Reports": "https://github.com/advanced-systems/anonpy/issues"
     },
     python_requires=">=3.11",
     install_requires=read_file("requirements/release.txt", split=True),
