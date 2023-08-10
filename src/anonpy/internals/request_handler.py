@@ -5,7 +5,7 @@ import platform
 from typing import Dict, List, Self, Tuple
 from urllib.request import getproxies
 
-from requests import HTTPError, Session
+from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.models import Response
 from urllib3.util.retry import Retry
@@ -87,8 +87,11 @@ class RequestHandler:
         that are exposed in the `RequestHandler` methods in form of parameters
         and keyword arguments.
         """
+        adapter = HTTPAdapter(max_retries=self._retry_strategy)
+
         session = Session()
-        session.mount("https://", HTTPAdapter(max_retries=self._retry_strategy))
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
         session.hooks["response"] = [lambda response, *args, **kwargs: response.raise_for_status()]
         session.headers.update({
             "User-Agent": self.user_agent
@@ -99,6 +102,9 @@ class RequestHandler:
         """
         Returns the GET request encoded in `utf-8`. Adds proxies to this session
         on the fly if urllib is able to pick up the system's proxy settings.
+
+        This method will raise an `HTTPError` if the HTTP request returned an
+        unsuccessful status code.
         """
         response = self._session.get(
             url,
