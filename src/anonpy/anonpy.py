@@ -32,7 +32,7 @@ class AnonPy(RequestHandler, LogHandler):
             total=total,
             status_forcelist=status_forcelist,
             backoff_factor=backoff_factor,
-            user_agent=user_agent or RequestHandler._build_user_agent(__package__, __version__),
+            user_agent=user_agent,
             proxies=proxies
         )
         self.base = base
