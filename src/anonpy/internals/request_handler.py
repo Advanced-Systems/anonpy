@@ -110,6 +110,7 @@ class RequestHandler:
             url,
             timeout=self.timeout,
             proxies=self.proxies or getproxies(),
+            allow_redirects=False,
             **kwargs
         )
         response.encoding = "utf-8"
