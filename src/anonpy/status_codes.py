@@ -5,12 +5,6 @@ from typing import Self
 
 @unique
 class StatusCode(Enum):
-    # Note that the API documentation doesn't contain a definition for a successful
-    # request. The ServerResponse dataclass that uses this enum in its status_code
-    # property returns StatusCode.OK if its status property is true. The status
-    # property only flips to false if an error occurred, in which event any other
-    # status code may be returned.
-    OK = 0
     ERROR_FILE_NOT_PROVIDED = 10
     ERROR_FILE_EMPTY = 11
     ERROR_FILE_INVALID = 12
@@ -22,6 +16,12 @@ class StatusCode(Enum):
     ERROR_FILE_SIZE_EXCEEDED = 31
     ERROR_FILE_BANNED = 32
     STATUS_ERROR_SYSTEM_FAILURE = 40
+    # Note that the API documentation doesn't contain a definition for a successful
+    # request. The ServerResponse dataclass that uses this enum in its status_code
+    # property returns StatusCode.OK if its status property is true. The status
+    # property only flips to false if an error occurred, in which event any other
+    # status code may be returned.
+    OK = 200
     # The documentation doesn't define this status code either, but as opposed
     # to StatusCode.OK, the server actually does return this error type if a file
     # doesn't exist (anymore)
