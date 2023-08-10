@@ -48,7 +48,7 @@ class AnonPy(RequestHandler, LogHandler):
             char: str='\u25CB',
             total: int=None,
             disable: bool=False
-        ) -> dict:
+        ) -> Dict:
         """
         Return custom optional arguments for `tqdm` progressbars.
         """
@@ -102,7 +102,7 @@ class AnonPy(RequestHandler, LogHandler):
                     verify=True
                 )
                 # TODO: configure logging
-                return ServerResponse(response, path, None)
+                return ServerResponse(response.json(), path, None)
 
     def preview(self: Self, url: str, path: Union[str, Path]=Path.cwd()) -> ServerResponse:
         with self._get(urljoin(self.base, f"v2/file/{urlparse(url).path.split('/')[1]}/info")) as response:
@@ -110,7 +110,7 @@ class AnonPy(RequestHandler, LogHandler):
             ddl = urlparse(next(filter(lambda link: 'cdn-' in link, links)))
             file_path = Path(path).joinpath(Path(ddl.path).name)
             # TODO: configure logging
-            return ServerResponse(response, file_path, ddl)
+            return ServerResponse(response.json(), file_path, ddl)
 
     def download(self: Self, url: str, path: Union[str, Path]=Path.cwd(), progressbar: bool=False) -> ServerResponse:
         MB = 1_048_576
