@@ -1,25 +1,26 @@
 #!/usr/bin/env python3
 
-import os
 import html
+import os
 import re
 from pathlib import Path
-from typing import Dict, List, Self, Tuple, Union, Optional, Iterable
+from typing import Dict, List, Optional, Self, Tuple, Union
 from urllib.parse import urljoin, urlparse
-
-from .internals import RequestHandler, LogHandler
-from .metadata import __package__, __version__
-from .server_response import ServerResponse
 
 from requests_toolbelt import MultipartEncoderMonitor
 from tqdm import tqdm
+
+from .internals import LogHandler, RequestHandler, _callback, _progressbar_options
+from .metadata import __package__, __version__
+from .server_response import ServerResponse
+
 
 class AnonPy(RequestHandler, LogHandler):
     def __init__(
             self: Self,
             base: str,
-            enable_logging: bool=False,
             token: Optional[str] = None,
+            enable_logging: bool=False,
             timeout: Tuple[float, float]=RequestHandler._timeout,
             total: int=RequestHandler._total,
             status_forcelist: List[int]=RequestHandler._status_forcelist,
@@ -39,43 +40,10 @@ class AnonPy(RequestHandler, LogHandler):
         self.enable_logging = enable_logging
         self.token = token
 
-    @staticmethod
-    def __progressbar_options(
-            iterable: Iterable,
-            desc: str,
-            unit: str,
-            color: str="\033[32m",
-            char: str='\u25CB',
-            total: int=None,
-            disable: bool=False
-        ) -> Dict:
-        """
-        Return custom optional arguments for `tqdm` progressbars.
-        """
-        return {
-            'iterable': iterable,
-            'bar_format': "{l_bar}%s{bar}%s{r_bar}" % (color, "\033[0m"),
-            'ascii': char.rjust(9, ' '),
-            'desc': desc,
-            'unit': unit.rjust(1, ' '),
-            'unit_scale': True,
-            'unit_divisor': 1024,
-            'total': len(iterable) if total is None else total,
-            'disable': not disable
-        }
-
-    @staticmethod
-    def __callback(monitor: MultipartEncoderMonitor, tqdm_handler: tqdm) -> None:
-        """
-        Define a multi part encoder monitor callback function for the upload method.
-        """
-        tqdm_handler.total = monitor.len
-        tqdm_handler.update(monitor.bytes_read - tqdm_handler.n)
-
     def upload(self: Self, path: Union[str, Path], progressbar: bool=False) -> ServerResponse:
         path = Path(path)
         size = os.stat(path).st_size
-        options = AnonPy.__progressbar_options(
+        options = _progressbar_options(
             None,
             f"Upload: {path.name}",
             unit='B',
@@ -89,7 +57,7 @@ class AnonPy(RequestHandler, LogHandler):
             with tqdm(**options) as tqdm_handler:
                 encoder_monitor = MultipartEncoderMonitor.from_fields(
                     fields,
-                    callback=lambda monitor: AnonPy.__callback(monitor, tqdm_handler)
+                    callback=lambda monitor: _callback(monitor, tqdm_handler)
                 )
 
                 response = self._session.post(
@@ -115,7 +83,7 @@ class AnonPy(RequestHandler, LogHandler):
     def download(self: Self, url: str, path: Union[str, Path]=Path.cwd(), progressbar: bool=False) -> ServerResponse:
         MB = 1_048_576
         download = self.preview(url, path)
-        options = AnonPy.__progressbar_options(
+        options = _progressbar_options(
             None,
             f"Download {download.id}",
             unit='B',
@@ -132,4 +100,3 @@ class AnonPy(RequestHandler, LogHandler):
 
         # TODO: configure logging
         return download
-
