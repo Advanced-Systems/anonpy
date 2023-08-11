@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Self
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import ParseResult
 
 from .status_codes import StatusCode
 
@@ -50,24 +50,24 @@ class ServerResponse:
     #region meta data
 
     @property
-    def url(self: Self) -> ParseResult | None:
+    def url(self: Self) -> str | None:
         """
         Return a (short) URL for the requested file.
         ```
         """
         try:
-            return urlparse(self.json["data"]["file"]["url"]["short"])
+            return self.json["data"]["file"]["url"]["short"]
         except KeyError:
             return None
 
     @property
-    def url_full(self: Self) -> ParseResult | None:
+    def url_full(self: Self) -> str | None:
         """
         Return the full URL for the requested file.
         ```
         """
         try:
-            return urlparse(self.json["data"]["file"]["url"]["full"])
+            return self.json["data"]["file"]["url"]["full"]
         except KeyError:
             return None
 
