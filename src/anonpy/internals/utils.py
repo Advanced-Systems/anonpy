@@ -2,10 +2,17 @@
 
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, Union
+from warnings import warn
 
 from requests_toolbelt import MultipartEncoderMonitor
 from tqdm import tqdm
 
+
+def deprecate(message: str) -> None:
+    """
+    Issue a deprecation warning to the calling function.
+    """
+    warn(message, category=DeprecationWarning, stacklevel=2)
 
 def unique(iter: Iterable[Any]) -> Iterable[Any]:
     """
