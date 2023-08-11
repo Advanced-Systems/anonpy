@@ -60,14 +60,11 @@ class AnonPy(RequestHandler, LogHandler):
                     callback=lambda monitor: _callback(monitor, tqdm_handler)
                 )
 
-                response = self._session.post(
+                response = self._post(
                     urljoin(self.base, 'upload'),
                     data=encoder_monitor,
                     params={'token': self.token},
                     headers={'Content-Type': encoder_monitor.content_type},
-                    timeout=self.timeout,
-                    proxies=self.proxies,
-                    verify=True
                 )
                 # TODO: configure logging
                 return ServerResponse(response.json(), path, None)

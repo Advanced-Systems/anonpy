@@ -52,7 +52,7 @@ class RequestHandler:
         self.status_forcelist = status_forcelist
         self.backoff_factor = backoff_factor
         self.user_agent = user_agent
-        self.proxies = proxies
+        self.proxies = proxies or getproxies()
 
     @staticmethod
     def build_user_agent(package: str, version: str, expose_username: bool=False) -> str:
@@ -115,10 +115,11 @@ class RequestHandler:
         })
         return session
 
-    def _get(self, url: str, **kwargs) -> Response:
+    def _get(self: Self, url: str, **kwargs) -> Response:
         """
         Returns the GET request encoded in `utf-8`. Adds proxies to this session
-        on the fly if urllib is able to pick up the system's proxy settings.
+        on the fly if urllib is able to pick up the system's proxy settings. This
+        methoed verifies SSL certificates for HTTPS requests.
 
         This method will raise an `HTTPError` if the HTTP request returned an
         unsuccessful status code.
@@ -126,9 +127,25 @@ class RequestHandler:
         response = self._session.get(
             url,
             timeout=self.timeout,
-            proxies=self.proxies or getproxies(),
+            proxies=self.proxies,
             allow_redirects=False,
             **kwargs
         )
         response.encoding = "utf-8"
         return response
+
+    def _post(self, url: str, **kwargs) -> Response:
+        """
+        Sends a POST request and returns a `Response` object. Adds proxies to this
+        session on the fly if urllib is able to pick up the system's proxy settings,
+        and disables automatic redirects. This method verifies SSL certificates for
+        HTTPS requests.
+        """
+        return self._session.post(
+            url,
+            timeout=self.timeout,
+            proxies=self.proxies,
+            allow_redirects=False,
+            verify=True,
+            **kwargs
+        )
