@@ -4,11 +4,14 @@ import os
 import platform
 from typing import Dict, List, Self, Tuple
 from urllib.request import getproxies
+from warnings import warn
 
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.models import Response
 from urllib3.util.retry import Retry
+
+from ..security import SecurityWarning
 
 
 class RequestHandler:
@@ -52,18 +55,32 @@ class RequestHandler:
         self.proxies = proxies
 
     @staticmethod
-    def _build_user_agent(package: str, version: str) -> str:
+    def build_user_agent(package: str, version: str, expose_username: bool=False) -> str:
         """
-        Create a faithful user agent.
-        """
-        username = os.environ.get("USERNAME" if platform.system() == "Windows" else "USER", "N/A")
+        Create a faithful user agent and expose the following information in the
+        user agent:
 
-        return " ".join([
+        - anonpy name and version
+        - platform name and version
+        - CPython version
+        - client username as read from the environment variable
+          (only if `expose_username` is enabled)
+
+        Issues a `SecurityWarning` if `expose_username` is enabled.
+        """
+        user_agent_data = [
             f"{package}/{version}",
             f"{platform.system()}/{platform.release()}"
-            f"CPython/{platform.python_version()}",
-            f"username/{username}"
-        ])
+            f"CPython/{platform.python_version()}"
+        ]
+
+        if expose_username:
+            warn("potential leak of PII in user agent", category=SecurityWarning, stacklevel=2)
+            username = os.environ.get("USERNAME" if platform.system() == "Windows" else "USER", "N/A")
+            user_agent_data.append(f"username/{username}")
+
+        return " ".join(user_agent_data)
+
 
     @property
     def _retry_strategy(self: Self) -> Retry:
