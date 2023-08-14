@@ -1,27 +1,47 @@
 #!/usr/bin/env python3
 
+import json
 import sys
 from argparse import Namespace
 
-from colorama import Fore, Style, just_fix_windows_console, deinit
+from colorama import Fore, Style, deinit, just_fix_windows_console
 from requests import HTTPError
 
 from .anonpy import AnonPy, ServerResponse
-from .internals import RequestHandler
 from .cli import build_parser
-from .internals import ConfigHandler
-from .metadata import __package__, __version__, __credits__
+from .internals import ConfigHandler, RequestHandler, read_file, str2bool
+from .metadata import __credits__, __package__, __version__
 
 #region commands
 
 def preview(anon: AnonPy, args: Namespace) -> None:
-    raise NotImplementedError()
+    for url in args.url:
+        preview = anon.preview(url)
+        data = {
+            "Status": "online" if preview.status else "offline",
+            "ID": preview.id,
+            "URL": preview.url,
+            "DDL": preview.ddl.geturl(),
+            "File Path": preview.file_path.name,
+            "Size": preview.size_readable,
+        }
+
+        print(json.dumps(data, indent=4) if args.verbose else ",".join(data.values()))
 
 def upload(anon: AnonPy, args: Namespace) -> None:
-    raise NotImplementedError()
+    for file in args.file:
+        upload = anon.upload(file, progressbar=args.verbose)
+        print(upload.url)
 
 def download(anon: AnonPy, args: Namespace) -> None:
-    raise NotImplementedError()
+    for url in (args.url or read_file(args.batch_file)):
+        if args.check and anon.preview(url, args.path).file_path.exists():
+            print(f"Warning: A file with the same name already exists in {str(args.path)!r}.")
+            prompt = input("Proceed with download? [Y/n] ")
+            if not str2bool(prompt): continue
+
+        download = anon.download(url, args.path, progressbar=args.verbose)
+        print(f"File: {download.file_path}")
 
 #endregion
 
@@ -37,7 +57,8 @@ def cli() -> None:
 
     kwargs = {
         "base": "https://api.anonfiles.com/",
-        "user_agent": RequestHandler._build_user_agent(__package__, __version__)
+        "user_agent": RequestHandler.build_user_agent(__package__, __version__),
+        "enable_logging": args.logging,
     }
 
     try:

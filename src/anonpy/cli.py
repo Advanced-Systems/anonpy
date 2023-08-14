@@ -9,6 +9,8 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
     parser._optionals.title = "Arguments"
 
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {version}")
+    parser.add_argument('-V', '--verbose', default=True, action='store_true', help="increase output verbosity")
+    parser.add_argument('--no-verbose', dest='verbose', action='store_false', help="run commands silently")
     parser.add_argument("-l", "--logging", default=False, action="store_true", help="log request history")
     parser.add_argument("-t", "--token", type=str, default="secret", help="set API token")
     parser.add_argument("-u", "--user-agent", type=str, default=None, help="set custom user-agent")

@@ -6,9 +6,9 @@
 
 # AnonPy
 
-Effortlessly interface with the https://anonfiles.com platform and streamline your
-file upload and download routines in your Python projects. This library implements
-an intuitive CLI, a cleverly designed library and a compact GUI.
+Effortlessly interface with the https://anonfiles.com platform for anonymous file
+sharing. This library implements an intuitive CLI, a cleverly designed library and
+a compact GUI.
 
 ## Library
 
