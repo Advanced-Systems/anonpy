@@ -41,3 +41,4 @@ class TestSymmetric:
 
         # Assert
         assert data == source
+        sym.delete_key(file)
