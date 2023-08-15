@@ -43,6 +43,7 @@ class Symmetric:
     >>> print(f"{source=})
     ```
     """
+
     @overload
     def __init__(self: Self) -> None:
         """
@@ -51,10 +52,10 @@ class Symmetric:
         ...
 
     @overload
-    def __init__(self: Self, key_storage_path: Optional[Union[str, Path]]) -> None:
+    def __init__(self: Self, key_storage_path: Union[str, Path]) -> None:
         """
         Instantiate a new object suitable for symmetric encryption and decryption.
-        The `key_storage_path` defines a folder for storing `*.key` files persistently
+        The `key_storage_path` defines a folder for storing symmetric keys persistently
         on disk for later retrieval.
 
         ### Related methods
@@ -158,11 +159,16 @@ class Symmetric:
 
     def store_key(self: Self, path: Union[str, Path]) -> None:
         """
-        Store the `<path>.key` file in the key storage path.
+        Store symmetric key in the key storage path.
 
         Raise a `TypeError` exception if the key hasn't been generated yet
         before calling this function.
+
+        ## Remarks
+        - symmetric key files should have a `.key` file extension
         """
+        if (self.key_storage_path is None):
+            raise TypeError("key_storage_path is udefined")
         if (self.__fernet is None):
             raise TypeError("cannot perform this operation without a fernet token")
 
