@@ -20,12 +20,13 @@ class Checksum:
     namespace internally for this purpose.
 
     ```python
-    from anonpy.security import Checksum, SHA256
-
-    checksum = Checksum("notes.txt", SHA256)
-    checksum.compute()
-    # 12998c017066eb0d2a70b94e6ed3192985855ce390f321bbdb832022888bd251
-    sha256_hash = str(checksum)
+    >>> from anonpy.security import Checksum, SHA256
+    >>> checksum = Checksum("notes.txt", SHA256)
+    >>> checksum.compute()
+    >>> # convert the hash digest (bytes) to string
+    >>> sha256_hash = str(checksum)
+    >>> print(sha256_hash)
+    '12998c017066eb0d2a70b94e6ed3192985855ce390f321bbdb832022888bd251'
     ```
     """
     def __init__(self: Self, path: Union[str, Path], algorithm: HashAlgorithm) -> None:
