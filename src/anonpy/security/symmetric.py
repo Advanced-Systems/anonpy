@@ -4,7 +4,7 @@ import base64
 import os
 from enum import Enum, unique
 from pathlib import Path
-from typing import Optional, Self, Union
+from typing import Optional, Self, Union, overload
 from warnings import warn
 
 from cryptography.fernet import Fernet
@@ -43,23 +43,80 @@ class Symmetric:
     >>> print(f"{source=})
     ```
     """
-    def __init__(self: Self, key_storage_path: Optional[Union[str, Path]]=None) -> None:
+    @overload
+    def __init__(self: Self) -> None:
         """
         Instantiate a new object suitable for symmetric encryption and decryption.
-        The `key_storage_path` defines a folder for storing `*.key` files.
         """
+        ...
+
+    @overload
+    def __init__(self: Self, key_storage_path: Optional[Union[str, Path]]) -> None:
+        """
+        Instantiate a new object suitable for symmetric encryption and decryption.
+        The `key_storage_path` defines a folder for storing `*.key` files persistently
+        on disk for later retrieval.
+
+        ### Related methods
+        - `store_key`
+        - `read_key`
+        - `delete_key`
+        """
+        ...
+
+    def __init__(self: Self, key_storage_path: Optional[Union[str, Path]]=None) -> None:
         self.key_storage_path = None if key_storage_path is None else Path(key_storage_path)
         self.__salt = None
         self.__key = None
         self.__fernet = None
 
+    @overload
     def delete_key(self: Self) -> None:
         """
-        Remove all internal references to a previously generated key.
+        Remove all internal attribute references to a previously generated key.
         """
+        ...
+
+    @overload
+    def delete_key(self: Self, path: Optional[Union[str, Path]]) -> None:
+        """
+        Remove all internal attribute references to a previously generated key
+        and remove the key file located in the key storage path (if any).
+        """
+        ...
+
+    def delete_key(self: Self, path: Optional[Union[str, Path]]=None) -> None:
         self.__salt = None
         self.__key = None
         self.__fernet = None
+
+        if path is not None:
+            Path(self.key_storage_path).joinpath(path).unlink(missing_ok=True)
+
+    @overload
+    def generate_key(self: Self) -> None:
+        """
+        Generate a fresh fernet key.
+        """
+        ...
+
+    @overload
+    def generate_key(
+            self: Self,
+            password: str,
+            encoding: str="utf-8",
+            key_derivation_function: KDF=KDF.PBKDF2HMAC
+        ) -> None:
+        """
+        Generate a fresh fernet key. This function will run the password through
+        the specified key derivation function.
+
+        PBKDF2 (Password Based Key Derivation Function 2) is typically used for
+        deriving a cryptographic key from a password. It may also be used for key
+        storage, but an alternate key storage KDF such as `Scrypt` is generally
+        considered a better solution.
+        """
+        ...
 
     def generate_key(
             self: Self,
@@ -67,15 +124,6 @@ class Symmetric:
             encoding: str="utf-8",
             key_derivation_function: KDF=KDF.PBKDF2HMAC
         ) -> None:
-        """
-        Generate a fresh fernet key. If a password was defined as parameter, this
-        function will run the password through the key derivation function.
-
-        PBKDF2 (Password Based Key Derivation Function 2) is typically used for
-        deriving a cryptographic key from a password. It may also be used for key
-        storage, but an alternate key storage KDF such as `Scrypt` is generally
-        considered a better solution.
-        """
         if (self.__fernet is not None):
             warn("replacing current fernet token", category=UserWarning, stacklevel=2)
 
@@ -148,4 +196,3 @@ class Symmetric:
         Decrypt a cypher that was encrypted with a `Fernet` token.
         """
         return self.__fernet.decrypt(cypher).decode(encoding)
-
