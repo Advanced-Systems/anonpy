@@ -48,7 +48,7 @@ class Symmetric:
         Instantiate a new object suitable for symmetric encryption and decryption.
         The `key_storage_path` defines a folder for storing `*.key` files.
         """
-        self.key_storage_path = Path(key_storage_path)
+        self.key_storage_path = None if key_storage_path is None else Path(key_storage_path)
         self.__salt = None
         self.__key = None
         self.__fernet = None
@@ -122,9 +122,13 @@ class Symmetric:
 
     def read_key(self: Self, path: Union[str, Path]) -> bytes:
         """
-        Open the key file in bytes mode and return its content.
+        Open the key file in bytes mode and bind its data to this object.
         """
-        return self.key_storage_path.joinpath(path).read_bytes()
+        if (self.__fernet is not None):
+            warn("replacing current fernet token", category=UserWarning, stacklevel=2)
+
+        self.__key = self.key_storage_path.joinpath(path).read_bytes()
+        self.__fernet = Fernet(self.__key)
 
     def encrypt(self: Self, data: Union[str, bytes], encoding: str="utf-8") -> bytes:
         """
