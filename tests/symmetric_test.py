@@ -14,10 +14,10 @@ class TestSymmetric:
     def test_encryption_and_decryption(self: Self, password: str, kdf: KDF) -> None:
         # Arrange
         sym = Symmetric()
+        sym.generate_key(password, key_derivation_function=kdf)
         message = "Hello, World!"
 
         # Act
-        sym.generate_key(password, key_derivation_function=kdf)
         cypher = sym.encrypt(message=message)
         source = sym.decrypt(cypher=cypher)
 
@@ -28,37 +28,37 @@ class TestSymmetric:
     def test_encryption_and_decryption_with_key_file(self: Self, password: str, kdf: KDF) -> None:
         # Arrange
         sym = Symmetric(key_storage_path=Path.home())
+        sym.generate_key(password, key_derivation_function=kdf)
         message = "Hello, World!"
-        file = "test.key"
+        sym_key = "test.key"
 
         # Act
-        sym.generate_key(password, key_derivation_function=kdf)
-        sym.store_key(file)
+        sym.store_key(sym_key)
         sym.delete_key()
-        sym.load_key(file)
+        sym.load_key(sym_key)
 
         cypher = sym.encrypt(message=message)
         source = sym.decrypt(cypher=cypher)
 
         # Assert
         assert message == source
-        sym.delete_key(file)
+        sym.delete_key(sym_key)
 
     def test_encryption_on_file(self: Self, password: str, kdf: KDF) -> None:
         # Arrange
-        sym = Symmetric(key_storage_path=Path.cwd())
+        sym = Symmetric()
+        sym.generate_key(password, key_derivation_function=kdf)
         message = "Hello, World!"
-        file = sym.key_storage_path.joinpath("test.txt")
-        file.touch(exist_ok=False)
-        file.write_text(message)
+        document = Path.cwd().joinpath("test.txt")
+        document.touch(exist_ok=False)
+        document.write_text(message)
 
         # Act
-        sym.generate_key(password, key_derivation_function=kdf)
-        sym.encrypt(path=file)
-        sym.decrypt(path=file)
-        source = file.read_text()
+        sym.encrypt(path=document)
+        sym.decrypt(path=document)
+        source = document.read_text()
 
         # Assert
         assert message == source
         sym.delete_key()
-        file.unlink()
+        document.unlink(missing_ok=False)

@@ -39,7 +39,7 @@ class Symmetric:
     >>> print(f"{cypher=}")
 
     >>> # decrypt the cypher again
-    >>> source = sym.decrypt(cypher)
+    >>> source = sym.decrypt(cypher=cypher)
     >>> print(f"{source=})
     ```
     """
@@ -162,7 +162,7 @@ class Symmetric:
         self.__key = base64.urlsafe_b64encode(kdf.derive(password.encode(encoding)))
         self.__fernet = Fernet(self.__key)
 
-    def store_key(self: Self, path: Union[str, Path]) -> None:
+    def store_key(self: Self, name: str) -> None:
         """
         Store symmetric key in the key storage path.
 
@@ -176,16 +176,16 @@ class Symmetric:
         if (self.__fernet is None):
             raise TypeError("cannot perform this operation without a fernet token")
 
-        self.key_storage_path.joinpath(path).write_bytes(self.__key)
+        self.key_storage_path.joinpath(name).write_bytes(self.__key)
 
-    def load_key(self: Self, path: Union[str, Path]) -> bytes:
+    def load_key(self: Self, name: str) -> bytes:
         """
         Open the key file in bytes mode and bind its data to this object.
         """
         if (self.__fernet is not None):
             warn("replacing current fernet token", category=UserWarning, stacklevel=2)
 
-        self.__key = self.key_storage_path.joinpath(path).read_bytes()
+        self.__key = self.key_storage_path.joinpath(name).read_bytes()
         self.__fernet = Fernet(self.__key)
 
     @overload
@@ -227,7 +227,7 @@ class Symmetric:
             return self.__fernet.encrypt(message.encode(encoding))
 
         # replace file content with cypher
-        file = self.key_storage_path.joinpath(path)
+        file = Path(path)
         source = file.read_bytes()
         cypher = self.__fernet.encrypt(source)
         file.write_bytes(cypher)
@@ -235,7 +235,7 @@ class Symmetric:
     @overload
     def decrypt(self: Self, path: Union[str, Path], encoding: str="utf-8") -> None:
         """
-        Decrypt a file in `path` and replace its content with the cypher text.
+        Decrypt a file in `path` and replace its content with the decrypted data.
 
         Raise a `TypeError` exception if the key hasn't been generated yet.
 
@@ -269,7 +269,7 @@ class Symmetric:
             return self.__fernet.decrypt(cypher).decode(encoding)
 
         # restore file from cypher
-        file = self.key_storage_path.joinpath(path)
+        file = Path(path)
         cypher = file.read_bytes()
         source = self.__fernet.decrypt(cypher)
         file.write_bytes(source)
