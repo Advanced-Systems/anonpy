@@ -31,9 +31,9 @@ class Checksum:
     """
     insecure_hash_algorithms = ["md5", "sha1"]
 
-    @staticmethod
     @overload
-    def compute(path: Union[str, Path], algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
+    @classmethod
+    def compute(cls, path: Union[str, Path], algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
         """
         Compute the checksum of a file using the specified `algorithm`.
 
@@ -45,9 +45,9 @@ class Checksum:
         """
         ...
 
-    @staticmethod
     @overload
-    def compute(data: str, algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
+    @classmethod
+    def compute(cls, data: str, algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
         """
         Compute the checksum of a string using the specified `algorithm`.
 
@@ -59,14 +59,15 @@ class Checksum:
         """
         ...
 
-    @staticmethod
+    @classmethod
     def compute(
+            cls,
             algorithm: HashAlgorithm,
             path: Optional[Union[str, Path]]=None,
             data: Optional[str]=None,
             encoding: str="utf-8"
         ) -> bytes:
-        if (algorithm.name in Checksum.insecure_hash_algorithms):
+        if (algorithm.name in cls.insecure_hash_algorithms):
             warn(f"{algorithm.name.upper()} is an insecure hashing algorithm", SecurityWarning, stacklevel=2)
 
         digest = Hash(algorithm())
