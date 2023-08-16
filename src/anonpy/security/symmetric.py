@@ -235,7 +235,7 @@ class Symmetric:
     @overload
     def decrypt(self: Self, path: Union[str, Path], encoding: str="utf-8") -> None:
         """
-        Decrypt a file in `path` and replace its content with the decrypted data.
+        Decrypt a file in `path` and replace its content with the decrypted text.
 
         Raise a `TypeError` exception if the key hasn't been generated yet.
 
