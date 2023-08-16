@@ -2,7 +2,7 @@
 
 import binascii
 from pathlib import Path
-from typing import Self, Union
+from typing import Optional, Union, overload
 from warnings import warn
 
 from cryptography.hazmat.primitives.hashes import Hash, HashAlgorithm
@@ -21,37 +21,69 @@ class Checksum:
 
     ```python
     >>> from anonpy.security import Checksum, SHA256
-    >>> checksum = Checksum("notes.txt", SHA256)
-    >>> checksum.compute()
+
+    >>> sha256_hash = Checksum.compute("notes.txt", SHA256)
+
     >>> # convert the hash digest (bytes) to string
-    >>> sha256_hash = str(checksum)
-    >>> print(sha256_hash)
+    >>> print(Checksum.hash2string(sha256_hash))
     '12998c017066eb0d2a70b94e6ed3192985855ce390f321bbdb832022888bd251'
     ```
     """
-    def __init__(self: Self, path: Union[str, Path], algorithm: HashAlgorithm) -> None:
-        self.path = path
-        self.algorithm = algorithm()
-        self.hash = None
+    insecure_hash_algorithms = ["md5", "sha1"]
 
-    def compute(self: Self) -> None:
+    @staticmethod
+    @overload
+    def compute(path: Union[str, Path], algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
         """
-        Computes the hash digest as bytes and stores the result in the `hash`
-        property of the current object.
+        Compute the checksum of a file using the specified `algorithm`.
+
+        Issue a `SecurityWarning` if the `algorithm` is deemed insecure.
+
+        ### Remark
+        You can use the `ignore_warnings` decorator from the `anonpy.internals`
+        namespace to ignore `SecurityWarning` issued by this function.
         """
-        if (self.algorithm.name in ("md5", "sha1")):
-            warn(f"{self.algorithm.name.upper()} is an insecure hashing algorithm", SecurityWarning, stacklevel=2)
+        ...
 
-        digest = Hash(self.algorithm)
+    @staticmethod
+    @overload
+    def compute(data: str, algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
+        """
+        Compute the checksum of a string using the specified `algorithm`.
 
-        with open(self.path, mode="rb") as file_handler:
+        Issue a `SecurityWarning` if the `algorithm` is deemed insecure.
+
+        ### Remark
+        You can use the `ignore_warnings` decorator from the `anonpy.internals`
+        namespace to ignore `SecurityWarning` issued by this function.
+        """
+        ...
+
+    @staticmethod
+    def compute(
+            algorithm: HashAlgorithm,
+            path: Optional[Union[str, Path]]=None,
+            data: Optional[str]=None,
+            encoding: str="utf-8"
+        ) -> bytes:
+        if (algorithm.name in Checksum.insecure_hash_algorithms):
+            warn(f"{algorithm.name.upper()} is an insecure hashing algorithm", SecurityWarning, stacklevel=2)
+
+        digest = Hash(algorithm())
+
+        if path is None:
+            digest.update(data.encode(encoding))
+            return digest.finalize()
+
+        with open(path, mode="rb", encoding=encoding) as file_handler:
             bytes_ = file_handler.read()
             digest.update(bytes_)
 
-        self.hash = digest.finalize()
+        return digest.finalize()
 
-    def __str__(self: Self) -> str:
-        return binascii.b2a_hex(self.hash).decode() if self.hash is not None else "unhashed"
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(path={self.path},algorithm={self.algorithm.name},hash={str(self)})"
+    @staticmethod
+    def hash2string(digest: bytes, encoding: str="utf-8") -> str:
+        """
+        Convert the hash digest to string.
+        """
+        return binascii.b2a_hex(digest).decode(encoding)
