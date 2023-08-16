@@ -34,7 +34,7 @@ class TestSymmetric:
         sym.generate_key(password, key_derivation_function=kdf)
         sym.store_key(file)
         sym.delete_key()
-        sym.read_key(file)
+        sym.load_key(file)
 
         cypher = sym.encrypt(data)
         source = sym.decrypt(cypher)

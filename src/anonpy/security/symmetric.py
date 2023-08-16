@@ -60,7 +60,7 @@ class Symmetric:
 
         ### Related methods
         - `store_key`
-        - `read_key`
+        - `load_key`
         - `delete_key`
         """
         ...
@@ -82,7 +82,9 @@ class Symmetric:
     def delete_key(self: Self, path: Optional[Union[str, Path]]) -> None:
         """
         Remove all internal attribute references to a previously generated key
-        and remove the key file located in the key storage path (if any).
+        and remove the key file located in the key storage path.
+
+        Raise a `TypeError` exception if the `key_storage_path` is undefined.
         """
         ...
 
@@ -91,8 +93,11 @@ class Symmetric:
         self.__key = None
         self.__fernet = None
 
+        if self.key_storage_path is None and path is not None:
+            raise TypeError("key storage path is undefined")
+
         if path is not None:
-            Path(self.key_storage_path).joinpath(path).unlink(missing_ok=True)
+            self.key_storage_path.joinpath(path).unlink(missing_ok=True)
 
     @overload
     def generate_key(self: Self) -> None:
@@ -174,7 +179,7 @@ class Symmetric:
 
         self.key_storage_path.joinpath(path).write_bytes(self.__key)
 
-    def read_key(self: Self, path: Union[str, Path]) -> bytes:
+    def load_key(self: Self, path: Union[str, Path]) -> bytes:
         """
         Open the key file in bytes mode and bind its data to this object.
         """
@@ -194,8 +199,8 @@ class Symmetric:
         if (self.__fernet is None):
             raise TypeError("cannot perform this operation without a fernet token")
 
-        message = data.encode(encoding) if isinstance(data, str) else data
-        return self.__fernet.encrypt(message)
+        source = data.encode(encoding) if isinstance(data, str) else data
+        return self.__fernet.encrypt(source)
 
     def decrypt(self: Self, cypher: bytes, encoding: str="utf-8") -> str:
         """
