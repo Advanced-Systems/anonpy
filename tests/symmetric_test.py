@@ -14,20 +14,21 @@ class TestSymmetric:
     def test_encryption_and_decryption(self: Self, password: str, kdf: KDF) -> None:
         # Arrange
         sym = Symmetric()
-        data = "Hello, World!"
+        message = "Hello, World!"
 
         # Act
         sym.generate_key(password, key_derivation_function=kdf)
-        cypher = sym.encrypt(data)
-        source = sym.decrypt(cypher)
+        cypher = sym.encrypt(message=message)
+        source = sym.decrypt(cypher=cypher)
 
         # Assert
-        assert data == source
+        assert message == source
+        sym.delete_key()
 
     def test_encryption_and_decryption_with_key_file(self: Self, password: str, kdf: KDF) -> None:
         # Arrange
         sym = Symmetric(key_storage_path=Path.home())
-        data = "Hello, World!"
+        message = "Hello, World!"
         file = "test.key"
 
         # Act
@@ -36,9 +37,28 @@ class TestSymmetric:
         sym.delete_key()
         sym.load_key(file)
 
-        cypher = sym.encrypt(data)
-        source = sym.decrypt(cypher)
+        cypher = sym.encrypt(message=message)
+        source = sym.decrypt(cypher=cypher)
 
         # Assert
-        assert data == source
+        assert message == source
         sym.delete_key(file)
+
+    def test_encryption_on_file(self: Self, password: str, kdf: KDF) -> None:
+        # Arrange
+        sym = Symmetric(key_storage_path=Path.cwd())
+        message = "Hello, World!"
+        file = sym.key_storage_path.joinpath("test.txt")
+        file.touch(exist_ok=False)
+        file.write_text(message)
+
+        # Act
+        sym.generate_key(password, key_derivation_function=kdf)
+        sym.encrypt(path=file)
+        sym.decrypt(path=file)
+        source = file.read_text()
+
+        # Assert
+        assert message == source
+        sym.delete_key()
+        file.unlink()

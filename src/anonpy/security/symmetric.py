@@ -35,7 +35,7 @@ class Symmetric:
     >>> sym.generate_key(password, key_derivation_function=KDF.PBKDF2HMAC)
 
     >>> # encrypt a message
-    >>> cypher = sym.encrypt("Hello, World!")
+    >>> cypher = sym.encrypt(message="Hello, World!")
     >>> print(f"{cypher=}")
 
     >>> # decrypt the cypher again
@@ -166,10 +166,9 @@ class Symmetric:
         """
         Store symmetric key in the key storage path.
 
-        Raise a `TypeError` exception if the key hasn't been generated yet
-        before calling this function.
+        Raise a `TypeError` exception if the key hasn't been generated yet.
 
-        ## Remarks
+        ### Remarks
         - symmetric key files should have a `.key` file extension
         """
         if (self.key_storage_path is None):
@@ -189,21 +188,88 @@ class Symmetric:
         self.__key = self.key_storage_path.joinpath(path).read_bytes()
         self.__fernet = Fernet(self.__key)
 
-    def encrypt(self: Self, data: Union[str, bytes], encoding: str="utf-8") -> bytes:
+    @overload
+    def encrypt(self: Self, path: Union[str, Path], encoding: str="utf-8") -> None:
         """
-        Encrypt `data` using a cryptographically secure `Fernet` token.
+        Encrypt the file in `path` using a cryptographically secure `Fernet` token
+        and overwrite its content with the cypher text.
 
-        Raise a `TypeError` exception if the key hasn't been generated yet
-        before calling this function.
+        Raise a `TypeError` exception if the key hasn't been generated yet..
+
+        ### Remarks
+        This function requires keyword arguments.
         """
+        ...
+
+    @overload
+    def encrypt(self: Self, message: str, encoding: str="utf-8") -> bytes:
+        """
+        Encrypt `message` using a cryptographically secure `Fernet` token
+        and return the cypher.
+
+        Raise a `TypeError` exception if the key hasn't been generated yet.
+
+        ### Remarks
+        This function requires keyword arguments.
+        """
+        ...
+
+    def encrypt(
+            self: Self,
+            path: Optional[Union[str, Path]]=None,
+            message: Optional[str]=None,
+            encoding: str="utf-8"
+        ) -> Optional[bytes]:
         if (self.__fernet is None):
             raise TypeError("cannot perform this operation without a fernet token")
 
-        source = data.encode(encoding) if isinstance(data, str) else data
-        return self.__fernet.encrypt(source)
+        if path is None:
+            return self.__fernet.encrypt(message.encode(encoding))
 
+        # replace file content with cypher
+        file = self.key_storage_path.joinpath(path)
+        source = file.read_bytes()
+        cypher = self.__fernet.encrypt(source)
+        file.write_bytes(cypher)
+
+    @overload
+    def decrypt(self: Self, path: Union[str, Path], encoding: str="utf-8") -> None:
+        """
+        Decrypt a file in `path` and replace its content with the cypher text.
+
+        Raise a `TypeError` exception if the key hasn't been generated yet.
+
+        ### Remarks
+        This function requires keyword arguments.
+        """
+        ...
+
+    @overload
     def decrypt(self: Self, cypher: bytes, encoding: str="utf-8") -> str:
         """
         Decrypt a cypher that was encrypted with a `Fernet` token.
+
+        Raise a `TypeError` exception if the key hasn't been generated yet.
+
+        ### Remarks
+        This function requires keyword arguments.
         """
-        return self.__fernet.decrypt(cypher).decode(encoding)
+        ...
+
+    def decrypt(
+            self: Self,
+            path: Optional[Union[str, Path]]=None,
+            cypher: Optional[bytes]=None,
+            encoding: str="utf-8"
+        ) -> Optional[str]:
+        if (self.__fernet is None):
+            raise TypeError("cannot perform this operation without a fernet token")
+
+        if path is None:
+            return self.__fernet.decrypt(cypher).decode(encoding)
+
+        # restore file from cypher
+        file = self.key_storage_path.joinpath(path)
+        cypher = file.read_bytes()
+        source = self.__fernet.decrypt(cypher)
+        file.write_bytes(source)
