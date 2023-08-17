@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import functools
+import warnings
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, Union
-from warnings import warn
+from typing import Any, Callable, Dict, Iterable, Iterator, Union
 
 from requests_toolbelt import MultipartEncoderMonitor
 from tqdm import tqdm
@@ -12,7 +13,17 @@ def deprecate(message: str) -> None:
     """
     Issue a deprecation warning to the calling function.
     """
-    warn(message, category=DeprecationWarning, stacklevel=2)
+    warnings.warn(message, category=DeprecationWarning, stacklevel=2)
+
+def ignore_warnings(category: Warning):
+    def ignore_warnings_decorator(func: Callable):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=category)
+                return func(*args, **kwargs)
+        return wrapper
+    return ignore_warnings_decorator
 
 def unique(iter: Iterable[Any]) -> Iterable[Any]:
     """
