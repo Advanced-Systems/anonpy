@@ -1,0 +1,31 @@
+name: Python Build Test
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - dev
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.11" ]
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Build Library
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements/development.txt
+        pip install -e .
+    - name: Run Unit Tests
+      run: |
+        pytest --verbose -s
