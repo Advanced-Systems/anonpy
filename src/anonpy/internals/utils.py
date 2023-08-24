@@ -25,6 +25,12 @@ def ignore_warnings(category: Warning):
         return wrapper
     return ignore_warnings_decorator
 
+def join_url(url: str, *paths) -> str:
+    """
+    Join a relative list of paths with a URL.
+    """
+    return functools.reduce(lambda u, p: f"{u}/{p}", [url, *paths])
+
 def unique(iter: Iterable[Any]) -> Iterable[Any]:
     """
     Remove all duplicated entries from a collection.

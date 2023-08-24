@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import base64
 import os
 import platform
-from typing import Dict, List, Self, Tuple
+from typing import Dict, List, Optional, Self, Tuple
+from urllib.parse import urlparse
 from urllib.request import getproxies
 from warnings import warn
 
@@ -12,6 +14,8 @@ from requests.models import Response
 from urllib3.util.retry import Retry
 
 from ..security import SecurityWarning
+from .authorization import Authorization
+from .utils import join_url
 
 
 class RequestHandler:
@@ -23,12 +27,16 @@ class RequestHandler:
     REST APIs.
     """
     __slots__ = [
+        "api",
+        "token",
+        "credentials",
         "timeout",
         "total",
         "status_forcelist",
         "backoff_factor",
         "user_agent",
-        "proxies"
+        "proxies",
+        "encoding"
     ]
 
     _timeout = (5, 5)
@@ -40,19 +48,26 @@ class RequestHandler:
 
     def __init__(
             self: Self,
+            api: str,
+            token: Optional[str]=None,
             timeout: Tuple[float, float]=_timeout,
             total: int=_total,
             status_forcelist: List[int]=_status_forcelist,
             backoff_factor: int=_backoff_factor,
             user_agent: str=_user_agent,
             proxies: Dict=_proxies,
+            encoding: str="utf-8"
     ) -> None:
+        self.api = urlparse(api)
+        self.token = token
+        self.credentials = None
         self.timeout = timeout
         self.total = total
         self.status_forcelist = status_forcelist
         self.backoff_factor = backoff_factor
         self.user_agent = user_agent
         self.proxies = proxies or getproxies()
+        self.encoding = encoding
 
     @staticmethod
     def build_user_agent(package: str, version: str, expose_username: bool=False) -> str:
@@ -81,6 +96,25 @@ class RequestHandler:
 
         return " ".join(user_agent_data)
 
+    def set_credentials(self: Self, auth: Authorization) -> None:
+        auth_header = None
+
+        match auth:
+            case Authorization.Basic:
+                if (self.api.scheme == "http"):
+                    warn(message=" ".join([
+                        "Base64-encoding can easily be reversed to obtain the original",
+                        "name and password, so Basic authentication is completely insecure.",
+                        "HTTPS is always recommended when using authentication, but is",
+                        "even more so when using Basic authentication."
+                    ]), category=SecurityWarning, stacklevel=2)
+
+                self.credentials = base64.b64encode(self.token.encode(self.encoding)).decode(self.encoding)
+                auth_header = {"Authorization": f"Basic {self.credentials}"}
+            case _:
+                raise NotImplementedError()
+
+        self._session.headers.update(auth_header)
 
     @property
     def _retry_strategy(self: Self) -> Retry:
@@ -99,7 +133,7 @@ class RequestHandler:
     @property
     def _session(self: Self) -> Session:
         """
-        Creates a custom `Session` object. A request session provides cookie
+        Create a custom `Session` object. A request session provides cookie
         persistence, connection-pooling, and further configuration options
         that are exposed in the `RequestHandler` methods in form of parameters
         and keyword arguments.
@@ -110,42 +144,47 @@ class RequestHandler:
         session.mount("http://", adapter)
         session.mount("https://", adapter)
         session.hooks["response"] = [lambda response, *args, **kwargs: response.raise_for_status()]
-        session.headers.update({
-            "User-Agent": self.user_agent
-        })
+        session.headers.update({"User-Agent": self.user_agent})
         return session
 
-    def _get(self: Self, url: str, **kwargs) -> Response:
+    def _get(self: Self, endpoint: str, **kwargs) -> Response:
         """
-        Returns the GET request encoded in `utf-8`. Adds proxies to this session
-        on the fly if urllib is able to pick up the system's proxy settings. This
-        methoed verifies SSL certificates for HTTPS requests.
+        Return the GET request, encoded in `utf-8` by default. This method will
+        add proxies to this session on the fly if urllib is able to pick up the
+        system's proxy settings and verify SSL certificates for HTTPS requests.
 
-        This method will raise an `HTTPError` if the HTTP request returned an
-        unsuccessful status code.
+        Raise an `HTTPError` if the HTTP request returned an unsuccessful status
+        code.
         """
         response = self._session.get(
-            url,
+            url=join_url(self.api.geturl(), endpoint),
             timeout=self.timeout,
             proxies=self.proxies,
-            allow_redirects=False,
             **kwargs
         )
-        response.encoding = "utf-8"
+        response.encoding = self.encoding
         return response
 
-    def _post(self, url: str, **kwargs) -> Response:
+    def _post(self, endpoint: str, **kwargs) -> Response:
         """
-        Sends a POST request and returns a `Response` object. Adds proxies to this
-        session on the fly if urllib is able to pick up the system's proxy settings,
-        and disables automatic redirects. This method verifies SSL certificates for
-        HTTPS requests.
+        Send a POST request and return a `Response` object as a result.
         """
         return self._session.post(
-            url,
+            url=join_url(self.api.geturl(), endpoint),
             timeout=self.timeout,
             proxies=self.proxies,
-            allow_redirects=False,
+            verify=True,
+            **kwargs
+        )
+
+    def _put(self, endoint: str, **kwargs) -> Response:
+        """
+        Send a PUT request and return a `Response` object as a result.
+        """
+        return self._session.put(
+            url=join_url(self.api.geturl(), endoint),
+            timeout=self.timeout,
+            proxies=self.proxies,
             verify=True,
             **kwargs
         )
