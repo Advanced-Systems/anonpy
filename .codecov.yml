@@ -1,0 +1,10 @@
+coverage:
+  require_ci_to_pass: yes
+  status:
+    patch:
+      default:
+        informational: true
+  ignore:
+    - "setup.py"
+    - "src/anonpy/__init__.py"
+    - "tests/test_*.py"
