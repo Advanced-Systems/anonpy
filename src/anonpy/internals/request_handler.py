@@ -15,6 +15,7 @@ from urllib3.util.retry import Retry
 
 from ..security import SecurityWarning
 from .authorization import Authorization
+from .timeout import Timeout
 from .utils import join_url
 
 
@@ -39,7 +40,7 @@ class RequestHandler:
         "encoding"
     ]
 
-    _timeout = (5, 5)
+    _timeout = Timeout(5, 5)
     _total = 5
     _status_forcelist = [413, 429, 500, 502, 503, 504]
     _backoff_factor = 1
@@ -50,7 +51,7 @@ class RequestHandler:
             self: Self,
             api: str,
             token: Optional[str]=None,
-            timeout: Tuple[float, float]=_timeout,
+            timeout: Timeout=_timeout,
             total: int=_total,
             status_forcelist: List[int]=_status_forcelist,
             backoff_factor: int=_backoff_factor,
@@ -61,7 +62,7 @@ class RequestHandler:
         self.api = urlparse(api)
         self.token = token
         self.credentials = None
-        self.timeout = timeout
+        self.timeout = timeout.values
         self.total = total
         self.status_forcelist = status_forcelist
         self.backoff_factor = backoff_factor

@@ -8,7 +8,7 @@ from tqdm import tqdm
 from tqdm.utils import CallbackIOWrapper
 
 from .endpoint import Endpoint
-from .internals import LogHandler, RequestHandler, _progressbar_options
+from .internals import LogHandler, RequestHandler, Timeout, _progressbar_options
 from .metadata import __package__, __version__
 
 
@@ -17,9 +17,9 @@ class AnonPy(RequestHandler, LogHandler):
             self: Self,
             api: str,
             endpoint: Endpoint,
-            token: Optional[str] = None,
+            token: Optional[str]=None,
             enable_logging: bool=False,
-            timeout: Tuple[float, float]=RequestHandler._timeout,
+            timeout: Timeout=RequestHandler._timeout,
             total: int=RequestHandler._total,
             status_forcelist: List[int]=RequestHandler._status_forcelist,
             backoff_factor: int=RequestHandler._backoff_factor,
