@@ -177,12 +177,12 @@ class RequestHandler:
             **kwargs
         )
 
-    def _put(self, endoint: str, **kwargs) -> Response:
+    def _put(self, endpoint: str, **kwargs) -> Response:
         """
         Send a PUT request and return a `Response` object as a result.
         """
         return self._session.put(
-            url=join_url(self.api.geturl(), endoint),
+            url=join_url(self.api.geturl(), endpoint),
             timeout=self.timeout,
             proxies=self.proxies,
             verify=True,
