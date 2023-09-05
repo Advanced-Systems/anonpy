@@ -17,3 +17,4 @@ from .metadata import (
     __license__,
     __credits__
 )
+from .providers import PixelDrain
