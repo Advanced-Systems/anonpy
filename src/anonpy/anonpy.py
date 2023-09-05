@@ -4,11 +4,11 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Self, Tuple, Union
 
-from requests_toolbelt import MultipartEncoderMonitor
 from tqdm import tqdm
+from tqdm.utils import CallbackIOWrapper
 
 from .endpoint import Endpoint
-from .internals import LogHandler, RequestHandler, _callback, _progressbar_options
+from .internals import LogHandler, RequestHandler, _progressbar_options
 from .metadata import __package__, __version__
 
 
@@ -52,21 +52,11 @@ class AnonPy(RequestHandler, LogHandler):
         )
 
         with open(path, mode="rb") as file_handler:
-            fields = {
-                "file": (file, file_handler, "application/octet-stream")
-            }
-
             with tqdm(**options) as tqdm_handler:
-                encoder_monitor = MultipartEncoderMonitor.from_fields(
-                    fields,
-                    callback=lambda monitor: _callback(monitor, tqdm_handler)
-                )
-
                 response = self._post(
                     self.endpoint.upload,
-                    data=encoder_monitor,
                     params={"token": self.token},
-                    headers={"Content-Type": encoder_monitor.content_type},
+                    files={"file": CallbackIOWrapper(tqdm_handler.update, file_handler, "read")}
                 )
 
                 # TODO: configure logging

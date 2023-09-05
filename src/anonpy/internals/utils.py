@@ -5,7 +5,6 @@ import warnings
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Iterator, Union
 
-from requests_toolbelt import MultipartEncoderMonitor
 from tqdm import tqdm
 
 
@@ -77,10 +76,3 @@ def _progressbar_options(
         "total": len(iterable) if total is None else total,
         "disable": not disable
     }
-
-def _callback(monitor: MultipartEncoderMonitor, tqdm_handler: tqdm) -> None:
-    """
-    Defines a multi-part encoder monitor callback function for progress feedback.
-    """
-    tqdm_handler.total = monitor.len
-    tqdm_handler.update(monitor.bytes_read - tqdm_handler.n)
