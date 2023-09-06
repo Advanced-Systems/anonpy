@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Self
 
 from ..anonpy import AnonPy, Timeout
 from ..endpoint import Endpoint
-from ..internals import RequestHandler
+from ..internals import Authorization, RequestHandler
 
 
 class PixelDrain(AnonPy):
@@ -22,6 +22,8 @@ class PixelDrain(AnonPy):
         self._api = "https://pixeldrain.com/api/"
         self._endpoint = Endpoint(upload="/file", download="file/{}", preview="/file/{}/info")
         self.enable_logging = enable_logging
+
+        if self.token: self.set_credentials(Authorization.Basic)
 
         super().__init__(
             self._api,
