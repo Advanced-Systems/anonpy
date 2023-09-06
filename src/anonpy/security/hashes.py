@@ -2,7 +2,7 @@
 
 import binascii
 from pathlib import Path
-from typing import Optional, Union, overload
+from typing import Optional, Self, Type, Union, overload
 from warnings import warn
 
 from cryptography.hazmat.primitives.hashes import Hash, HashAlgorithm
@@ -33,7 +33,7 @@ class Checksum:
 
     @overload
     @classmethod
-    def compute(cls, path: Union[str, Path], algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
+    def compute(cls: Type[Self], path: Union[str, Path], algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
         """
         Compute the checksum of a file using the specified `algorithm`.
 
@@ -47,7 +47,7 @@ class Checksum:
 
     @overload
     @classmethod
-    def compute(cls, data: str, algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
+    def compute(cls: Type[Self], data: str, algorithm: HashAlgorithm, encoding: str="utf-8") -> bytes:
         """
         Compute the checksum of a string using the specified `algorithm`.
 
@@ -61,7 +61,7 @@ class Checksum:
 
     @classmethod
     def compute(
-            cls,
+            cls: Type[Self],
             algorithm: HashAlgorithm,
             path: Optional[Union[str, Path]]=None,
             data: Optional[str]=None,
