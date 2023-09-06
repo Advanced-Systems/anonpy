@@ -4,21 +4,22 @@
 
 Please take the time to carefully review the sections of this document that pertain
 to your specific problem. If you have any other questions to which you couldn't find
-and answer here, feel free to use [`Discussions / Q&A`](https://github.com/Advanced-Systems/anonpy/discussions/categories/q-a)
-to seek more help.
+and answer here, feel free to use [Discussions / Q&A](https://github.com/Advanced-Systems/anonpy/discussions/categories/q-a)
+to seek more help. You may also want to have a look at the [Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
+page to learn more about internal development processes.
 
 ## Software Development Life Cycle
 
 ### Bug Reports
 
-Errors should be submitted on GitHub in [`Issues`](https://github.com/Advanced-Systems/anonpy/issues).
+Errors should be submitted on GitHub in [Issues](https://github.com/Advanced-Systems/anonpy/issues).
 Try to fill out the bug report template to the best of your knowledge.
 Feel free to add additional information that you think could be remotely helpful
 for troubleshooting the issue.
 
 ### Feature Requests
 
-New feature requests should be filled on GitHub in [`Discussions / Feature Requests`](https://github.com/Advanced-Systems/anonpy/discussions/categories/feature-requests).
+New feature requests should be filled on GitHub in [Discussions / Feature Requests](https://github.com/Advanced-Systems/anonpy/discussions/categories/feature-requests).
 Note that it is is not paramount to write a detailed story about the requested
 feature in question, but rather to create an incentive for the community to come
 together to iron out the specifics.
