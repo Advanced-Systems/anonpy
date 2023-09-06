@@ -98,6 +98,11 @@ class RequestHandler:
         return " ".join(user_agent_data)
 
     def set_credentials(self: Self, auth: Authorization) -> None:
+        """
+        Add authorization to a session by using the constructor `token` as a secret.
+
+        Issues a `SecurityWarning` if the authorization is deemed insecure.
+        """
         auth_header = None
 
         match auth:
