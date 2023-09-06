@@ -2,14 +2,13 @@
 
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Self, Tuple, Union
+from typing import Dict, List, Optional, Self, Union
 
 from tqdm import tqdm
 from tqdm.utils import CallbackIOWrapper
 
 from .endpoint import Endpoint
 from .internals import LogHandler, RequestHandler, Timeout, _progressbar_options
-from .metadata import __package__, __version__
 
 
 class AnonPy(RequestHandler, LogHandler):

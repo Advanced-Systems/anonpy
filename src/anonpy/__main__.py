@@ -9,8 +9,7 @@ from requests import HTTPError
 
 from .anonpy import AnonPy, ServerResponse
 from .cli import build_parser
-from .internals import ConfigHandler, RequestHandler, read_file, str2bool
-from .metadata import __credits__, __package__, __version__
+from .internals import ConfigHandler, RequestHandler, __credits__, __package__, __version__, read_file, str2bool
 
 #region commands
 
