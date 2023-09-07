@@ -30,6 +30,16 @@ def join_url(url: str, *paths) -> str:
     """
     return functools.reduce(lambda u, p: f"{u}/{p}", [url, *paths])
 
+def get_while(dict_: Dict, default: Any, *keys: str) -> Any:
+    """
+    Return the value of the first matching key of `dict_`, else `default`.
+    """
+    for key in keys:
+        if (value := dict_.get(key)) is not None:
+            return value
+
+    return default
+
 def unique(iter: Iterable[Any]) -> Iterable[Any]:
     """
     Remove all duplicated entries from a collection.
