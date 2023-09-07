@@ -3,45 +3,48 @@
 import json
 import sys
 from argparse import Namespace
+from pathlib import Path
 
 from colorama import Fore, Style, deinit, just_fix_windows_console
-from requests import HTTPError
+from requests.exceptions import HTTPError
 
-from .anonpy import AnonPy, ServerResponse
+from .anonpy import AnonPy
 from .cli import build_parser
-from .internals import ConfigHandler, RequestHandler, read_file, str2bool
-from .metadata import __credits__, __package__, __version__
+from .internals import ConfigHandler, RequestHandler, __credits__, __package__, __version__, read_file, str2bool
+from .providers import PixelDrain
+from .security import Checksum, MD5
 
 #region commands
 
 def preview(anon: AnonPy, args: Namespace) -> None:
-    for url in args.url:
-        preview = anon.preview(url)
-        data = {
-            "Status": "online" if preview.status else "offline",
-            "ID": preview.id,
-            "URL": preview.url,
-            "DDL": preview.ddl.geturl(),
-            "File Path": preview.file_path.name,
-            "Size": preview.size_readable,
-        }
-
-        print(json.dumps(data, indent=4) if args.verbose else ",".join(data.values()))
+    for resource in args.resource:
+        preview = anon.preview(resource)
+        print(json.dumps(preview, indent=4) if args.verbose else ",".join(preview.values()))
 
 def upload(anon: AnonPy, args: Namespace) -> None:
     for file in args.file:
-        upload = anon.upload(file, progressbar=args.verbose)
-        print(upload.url)
+        anon.upload(file, progressbar=args.verbose)
+
+        if not args.verbose: continue
+        md5 = Checksum.compute(file, MD5)
+        print(f"md5\t{Checksum.hash2string(md5)}")
 
 def download(anon: AnonPy, args: Namespace) -> None:
-    for url in (args.url or read_file(args.batch_file)):
-        if args.check and anon.preview(url, args.path).file_path.exists():
+    for resource in (args.resource or read_file(args.batch_file)):
+        preview = anon.preview(resource)
+        file = preview.get("name")
+
+        if args.check and file is not None and Path(file).exists():
             print(f"Warning: A file with the same name already exists in {str(args.path)!r}.")
             prompt = input("Proceed with download? [Y/n] ")
             if not str2bool(prompt): continue
 
-        download = anon.download(url, args.path, progressbar=args.verbose)
-        print(f"File: {download.file_path}")
+        anon.download(resource, args.path, progressbar=args.verbose)
+
+        if not args.verbose: continue
+        md5 = Checksum.compute(file, MD5)
+        print(f"file\t{file}")
+        print(f"md5\t{Checksum.hash2string(md5)}")
 
 #endregion
 
@@ -56,21 +59,21 @@ def cli() -> None:
     args = parser.parse_args()
 
     kwargs = {
-        "base": "https://api.anonfiles.com/",
         "user_agent": RequestHandler.build_user_agent(__package__, __version__),
         "enable_logging": args.logging,
     }
 
     try:
-        anon = AnonPy(**kwargs)
+        # NOTE: Uses the PixelDrain provider by default for now
+        provider = PixelDrain(**kwargs)
 
         match args.command:
             case "preview":
-                preview(anon, args)
+                preview(provider, args)
             case "upload":
-                upload(anon, args)
+                upload(provider, args)
             case "download":
-                download(anon, args)
+                download(provider, args)
             case _:
                 raise NotImplementedError()
 
@@ -79,15 +82,11 @@ def cli() -> None:
     except NotImplementedError:
         parser.print_help()
     except HTTPError as http_error:
-        server_response = ServerResponse(http_error.response.json(), None, None)
-        print(server_response.status_code, file=sys.stderr)
+        print(http_error.response.text, file=sys.stderr)
     except Exception as exception:
         print(exception, file=sys.stderr)
     except:
-        print("\n".join([
-            Fore.RED,
-            "FATAL ERROR",
-            Style.RESET_ALL,
+        print("\n".join([ # TODO: Add log file path to error message
             "An unhandled exception was thrown. The log file may give you more",
             "insight into what went wrong. Alternatively, file a bug report on",
             "GitHub at https://github.com/advanced-systems/anonpy."

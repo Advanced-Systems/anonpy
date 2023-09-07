@@ -274,6 +274,9 @@ class Asymmetric:
         if self.__public_key is None:
             raise TypeError("cannot perform this operation without a public key")
 
+        if path is not None and message is not None:
+            raise TypeError("illegal combinations of arguments (supplied both path and message)")
+
         sha256 = SHA256()
         oaep = OAEP(mgf=MGF1(sha256), algorithm=sha256, label=None)
 
@@ -319,6 +322,9 @@ class Asymmetric:
         ) -> Optional[str]:
         if self.__private_key is None:
             raise TypeError("cannot perform this operation without a private key")
+
+        if path is not None and cypher is not None:
+            raise TypeError("illegal combinations of arguments (supplied both path and cypher)")
 
         sha256 = SHA256()
         oaep = OAEP(mgf=MGF1(sha256), algorithm=sha256, label=None)

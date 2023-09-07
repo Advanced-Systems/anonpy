@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import warnings
 from typing import Self
 
 from anonpy.security import Checksum, MD5, SecurityWarning

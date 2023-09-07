@@ -1,99 +1,109 @@
 #!/usr/bin/env python3
 
-import html
 import os
-import re
 from pathlib import Path
-from typing import Dict, List, Optional, Self, Tuple, Union
-from urllib.parse import urljoin, urlparse
+from typing import Dict, List, Optional, Self, Union
 
-from requests_toolbelt import MultipartEncoderMonitor
 from tqdm import tqdm
+from tqdm.utils import CallbackIOWrapper
 
-from .internals import LogHandler, RequestHandler, _callback, _progressbar_options
-from .metadata import __package__, __version__
-from .server_response import ServerResponse
+from .endpoint import Endpoint
+from .internals import LogHandler, RequestHandler, Timeout, _progressbar_options
 
 
 class AnonPy(RequestHandler, LogHandler):
+    __slots__ = [
+        "api",
+        "endpoint",
+        "token",
+        "enable_logging",
+        "timeout",
+        "total",
+        "status_forcelist",
+        "backoff_factor",
+        "user_agent",
+        "proxies",
+        "encoding"
+    ]
+
     def __init__(
             self: Self,
-            base: str,
-            token: Optional[str] = None,
+            api: str,
+            endpoint: Endpoint,
+            token: Optional[str]=None,
             enable_logging: bool=False,
-            timeout: Tuple[float, float]=RequestHandler._timeout,
+            timeout: Timeout=RequestHandler._timeout,
             total: int=RequestHandler._total,
             status_forcelist: List[int]=RequestHandler._status_forcelist,
             backoff_factor: int=RequestHandler._backoff_factor,
             user_agent: str=RequestHandler._user_agent,
             proxies: Dict=RequestHandler._proxies,
+            encoding: str="utf-8"
         ) -> None:
         super().__init__(
+            api=api,
+            token=token,
             timeout=timeout,
             total=total,
             status_forcelist=status_forcelist,
             backoff_factor=backoff_factor,
             user_agent=user_agent,
-            proxies=proxies
+            proxies=proxies,
+            encoding=encoding
         )
-        self.base = base
+        self.endpoint = endpoint
         self.enable_logging = enable_logging
-        self.token = token
 
-    def upload(self: Self, path: Union[str, Path], progressbar: bool=False) -> ServerResponse:
+    def upload(self: Self, path: Union[str, Path], progressbar: bool=False) -> Dict:
         path = Path(path)
+        file = path.name
         size = os.stat(path).st_size
         options = _progressbar_options(
             None,
-            f"Upload: {path.name}",
-            unit='B',
+            f"Upload: {file}",
+            unit="B",
             total=size,
             disable=progressbar
         )
 
-        with open(path, mode='rb') as file_handler:
-            fields = {'file': (path.name, file_handler, 'application/octet-stream')}
-
+        with open(path, mode="rb") as file_handler:
             with tqdm(**options) as tqdm_handler:
-                encoder_monitor = MultipartEncoderMonitor.from_fields(
-                    fields,
-                    callback=lambda monitor: _callback(monitor, tqdm_handler)
-                )
-
                 response = self._post(
-                    urljoin(self.base, 'upload'),
-                    data=encoder_monitor,
-                    params={'token': self.token},
-                    headers={'Content-Type': encoder_monitor.content_type},
+                    self.endpoint.upload,
+                    params={"token": self.token},
+                    files={"file": CallbackIOWrapper(tqdm_handler.update, file_handler, "read")}
                 )
+
                 # TODO: configure logging
-                return ServerResponse(response.json(), path, None)
+                return response.json()
 
-    def preview(self: Self, url: str, path: Union[str, Path]=Path.cwd()) -> ServerResponse:
-        with self._get(urljoin(self.base, f"v2/file/{urlparse(url).path.split('/')[1]}/info")) as response:
-            links = re.findall(r'''.*?(?:href|value)=['"](.*?)['"].*?''', html.unescape(self._get(url).text), re.I)
-            ddl = urlparse(next(filter(lambda link: 'cdn-' in link, links)))
-            file_path = Path(path).joinpath(Path(ddl.path).name)
-            # TODO: configure logging
-            return ServerResponse(response.json(), file_path, ddl)
+    def preview(self: Self, resource: str) -> Dict:
+        response = self._get(self.endpoint.preview.format(resource), allow_redirects=True)
+        return response.json()
 
-    def download(self: Self, url: str, path: Union[str, Path]=Path.cwd(), progressbar: bool=False) -> ServerResponse:
+    def download(
+            self: Self,
+            resource: str,
+            path: Union[str, Path]=Path.cwd(),
+            progressbar: bool=False
+        ) -> Dict:
         MB = 1_048_576
-        download = self.preview(url, path)
+        info = self.preview(resource)
+
         options = _progressbar_options(
             None,
-            f"Download {download.id}",
-            unit='B',
-            total=download.size,
+            f"Download {info.get('id', 'N/A')}",
+            unit="B",
+            total=info.get("size", 0),
             disable=progressbar
         )
 
-        with open(download.file_path, mode='wb') as file_handler:
+        with open(path.joinpath(info.get("name", "N/A")), mode="wb") as file_handler:
             with tqdm(**options) as tqdm_handler:
-                with self._get(download.ddl.geturl(), stream=True) as response:
+                with self._get(self.endpoint.download.format(resource), stream=True) as response:
                     for chunk in response.iter_content(chunk_size=1*MB):
                         tqdm_handler.update(len(chunk))
                         file_handler.write(chunk)
 
         # TODO: configure logging
-        return download
+        return info

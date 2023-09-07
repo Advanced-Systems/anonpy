@@ -223,6 +223,9 @@ class Symmetric:
         if (self.__fernet is None):
             raise TypeError("cannot perform this operation without a fernet token")
 
+        if path is not None and message is not None:
+            raise TypeError("illegal combinations of arguments (supplied both path and message)")
+
         if path is None:
             return self.__fernet.encrypt(message.encode(encoding))
 
@@ -264,6 +267,9 @@ class Symmetric:
         ) -> Optional[str]:
         if (self.__fernet is None):
             raise TypeError("cannot perform this operation without a fernet token")
+
+        if path is not None and cypher is not None:
+            raise TypeError("illegal combinations of arguments (supplied both path and cypher)")
 
         if path is None:
             return self.__fernet.decrypt(cypher).decode(encoding)
