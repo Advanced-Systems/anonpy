@@ -23,7 +23,7 @@ class PixelDrain(AnonPy):
         self._endpoint = Endpoint(upload="/file", download="file/{}", preview="/file/{}/info")
         self.enable_logging = enable_logging
 
-        if self.token: self.set_credentials(Authorization.Basic)
+        if token: self.set_credentials(Authorization.Basic)
 
         super().__init__(
             self._api,
