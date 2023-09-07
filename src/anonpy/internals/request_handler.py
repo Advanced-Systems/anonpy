@@ -3,7 +3,7 @@
 import base64
 import os
 import platform
-from typing import Dict, List, Optional, Self, Tuple
+from typing import Dict, List, Optional, Self
 from urllib.parse import urlparse
 from urllib.request import getproxies
 from warnings import warn
