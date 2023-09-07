@@ -12,6 +12,7 @@ from .anonpy import AnonPy
 from .cli import build_parser
 from .internals import ConfigHandler, RequestHandler, __credits__, __package__, __version__, read_file, str2bool
 from .providers import PixelDrain
+from .security import Checksum, MD5
 
 #region commands
 
@@ -24,6 +25,10 @@ def upload(anon: AnonPy, args: Namespace) -> None:
     for file in args.file:
         anon.upload(file, progressbar=args.verbose)
 
+        if not args.verbose: continue
+        md5 = Checksum.compute(file, MD5)
+        print(f"md5\t{Checksum.hash2string(md5)}")
+
 def download(anon: AnonPy, args: Namespace) -> None:
     for resource in (args.resource or read_file(args.batch_file)):
         preview = anon.preview(resource)
@@ -35,7 +40,11 @@ def download(anon: AnonPy, args: Namespace) -> None:
             if not str2bool(prompt): continue
 
         anon.download(resource, args.path, progressbar=args.verbose)
-        print(f"downloaded {file}")
+
+        if not args.verbose: continue
+        md5 = Checksum.compute(file, MD5)
+        print(f"file\t{file}")
+        print(f"md5\t{Checksum.hash2string(md5)}")
 
 #endregion
 
@@ -76,7 +85,6 @@ def cli() -> None:
         print(http_error.response.text, file=sys.stderr)
     except Exception as exception:
         print(exception, file=sys.stderr)
-        print(provider.token)
     except:
         print("\n".join([ # TODO: Add log file path to error message
             "An unhandled exception was thrown. The log file may give you more",
