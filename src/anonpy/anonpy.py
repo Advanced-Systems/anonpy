@@ -12,6 +12,20 @@ from .internals import LogHandler, RequestHandler, Timeout, _progressbar_options
 
 
 class AnonPy(RequestHandler, LogHandler):
+    __slots__ = [
+        "api",
+        "endpoint",
+        "token",
+        "enable_logging",
+        "timeout",
+        "total",
+        "status_forcelist",
+        "backoff_factor",
+        "user_agent",
+        "proxies",
+        "encoding"
+    ]
+
     def __init__(
             self: Self,
             api: str,
@@ -24,6 +38,7 @@ class AnonPy(RequestHandler, LogHandler):
             backoff_factor: int=RequestHandler._backoff_factor,
             user_agent: str=RequestHandler._user_agent,
             proxies: Dict=RequestHandler._proxies,
+            encoding: str="utf-8"
         ) -> None:
         super().__init__(
             api=api,
@@ -33,7 +48,8 @@ class AnonPy(RequestHandler, LogHandler):
             status_forcelist=status_forcelist,
             backoff_factor=backoff_factor,
             user_agent=user_agent,
-            proxies=proxies
+            proxies=proxies,
+            encoding=encoding
         )
         self.endpoint = endpoint
         self.enable_logging = enable_logging
