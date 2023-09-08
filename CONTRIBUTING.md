@@ -60,13 +60,20 @@ for this are, i.a.
 - Remove
 
 Good to know: you can attribute co-authors in your commit messages. Learn more about
-how to do it [here](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors).
+how to do it [here](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors). You can also add your GitHub username
+to the `__credits__` field in `metadata.py` if your contribution involved changes
+in code.
 
-## Code Style
+### Releases
+
+This project uses [Semantic Versioning 2.0.0](https://semver.org/) as a versioning
+system.
+
+## Coding Style
 
 Without going into great lengths, try to take the following advice to heart:
 
-- *use* type annotations for all function parameters (with the exception of `*args`
-  and `**kwargs`)
 - function names *must* obey the same rules as commit message sentence starters
 - functions and classes *must* be annotated by doc strings
+- all functions *must* use type annotations
+- comments *should* be spelled correctly
