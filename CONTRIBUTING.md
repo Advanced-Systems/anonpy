@@ -40,6 +40,11 @@ This project uses the [GitHub Flow](https://guides.github.com/introduction/flow/
 i.e. all changes happen through Pull Requests (PRs). Because all PRs should target
 the `master` branch, the threshold of acceptance is fairly high.
 
+Branches *must* follow the `<number>_<TitleInPascalCase>` naming convention. This
+automatically implies that every pull request requires an issue/ticket attached
+to it. By strict enforcement of this rule we can reasonably guard ourselves against
+unwanted [feature creep](https://www.shopify.com/partners/blog/feature-creep).
+
 Avoid long-living feature branches to decrease the probability of merge conflicts.
 If possible, divide a story into smaller self-contained chunks of subtasks that
 can be merged separately.
@@ -60,13 +65,20 @@ for this are, i.a.
 - Remove
 
 Good to know: you can attribute co-authors in your commit messages. Learn more about
-how to do it [here](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors).
+how to do it [here](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors). You can also add your GitHub username
+to the `__credits__` field in `metadata.py` if your contribution involved changes
+in code.
 
-## Code Style
+### Releases
+
+This project uses [Semantic Versioning 2.0.0](https://semver.org/) as a versioning
+system.
+
+## Coding Style
 
 Without going into great lengths, try to take the following advice to heart:
 
-- *use* type annotations for all function parameters (with the exception of `*args`
-  and `**kwargs`)
 - function names *must* obey the same rules as commit message sentence starters
 - functions and classes *must* be annotated by doc strings
+- all functions *must* use type annotations
+- comments *should* be spelled correctly
