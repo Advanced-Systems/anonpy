@@ -35,6 +35,8 @@ the realm of anonymous file sharing. It implements an extensible provider-indepe
 class system for communicating with any REST API, and also comes with an intuitive
 CLI or lightweight GUI for direct client usage.
 
+> Note that this project is still a work in progress.
+
 ## Library
 
 You can use `AnonPy` to interface with a wide variety of REST services by
