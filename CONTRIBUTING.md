@@ -40,6 +40,11 @@ This project uses the [GitHub Flow](https://guides.github.com/introduction/flow/
 i.e. all changes happen through Pull Requests (PRs). Because all PRs should target
 the `master` branch, the threshold of acceptance is fairly high.
 
+Branches *must* follow the `<number>_<TitleInPascalCase>` naming convention. This
+automatically implies that every pull request requires an issue/ticket attached
+to it. By strict enforcement of this rule we can reasonably guard ourselves against
+unwanted [feature creep](https://www.shopify.com/partners/blog/feature-creep).
+
 Avoid long-living feature branches to decrease the probability of merge conflicts.
 If possible, divide a story into smaller self-contained chunks of subtasks that
 can be merged separately.
