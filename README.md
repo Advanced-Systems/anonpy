@@ -1,4 +1,4 @@
-<center>
+<div align="center">
   <a href="https://github.com/advanced-systems/anonpy" title="Project Logo">
     <img height="150" style="margin-top:15px" src="https://raw.githubusercontent.com/advanced-systems/anonpy/master/logo.svg">
   </a>
@@ -26,7 +26,7 @@
         <img src="https://img.shields.io/badge/License-MIT-blue.svg">
     </a>
   </div>
-</center>
+</div>
 
 ## About
 
