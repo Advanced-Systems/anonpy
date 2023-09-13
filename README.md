@@ -35,7 +35,28 @@ the realm of anonymous file sharing. It implements an extensible provider-indepe
 class system for communicating with any REST API, and also comes with an intuitive
 CLI or lightweight GUI for direct client usage.
 
-> Note that this project is still a work in progress.
+> ⚠ This project is still a work in progress. Keep an eye on the
+> [Roadmap](https://github.com/Advanced-Systems/anonpy/milestone/1),
+> which documents the progress path toward the first major release.
+
+## Installation
+
+> ⚠ It is currently not possible to install this library with `pip` because
+> the name `anonpy` is currently being used by an another (abandoned) project
+> on PyPI. We are in talks about transferring this name to our project.
+
+This library can be installed with:
+
+```powershell
+pip install anonpy
+```
+
+Alternatively, use the [`pipx`](https://pypa.github.io/pipx/) command if you
+intend to use `anonpy` solely from the command line:
+
+```powershell
+pipx install anonpy
+```
 
 ## Library
 
