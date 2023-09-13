@@ -88,17 +88,17 @@ class AnonPy(RequestHandler, LogHandler):
             progressbar: bool=False
         ) -> Dict:
         MB = 1_048_576
-        info = self.preview(resource)
+        preview = self.preview(resource)
 
         options = _progressbar_options(
             None,
-            f"Download {info.get('id', 'N/A')}",
+            f"Download {preview.get('id', 'N/A')}",
             unit="B",
-            total=info.get("size", 0),
+            total=preview.get("size", 0),
             disable=progressbar
         )
 
-        with open(path.joinpath(info.get("name", "N/A")), mode="wb") as file_handler:
+        with open(path.joinpath(preview.get("name", "N/A")), mode="wb") as file_handler:
             with tqdm(**options) as tqdm_handler:
                 with self._get(self.endpoint.download.format(resource), stream=True) as response:
                     for chunk in response.iter_content(chunk_size=1*MB):
@@ -106,4 +106,4 @@ class AnonPy(RequestHandler, LogHandler):
                         file_handler.write(chunk)
 
         # TODO: configure logging
-        return info
+        return preview

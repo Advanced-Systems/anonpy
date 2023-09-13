@@ -48,7 +48,7 @@ def download(anon: AnonPy, args: Namespace) -> None:
 
 #endregion
 
-def cli() -> None:
+def main() -> None:
     # enable Windows' built-in ANSI support
     just_fix_windows_console()
 
@@ -95,4 +95,4 @@ def cli() -> None:
         deinit()
 
 if __name__ == "__main__":
-    cli()
+    main()

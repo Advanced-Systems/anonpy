@@ -11,4 +11,3 @@ See https://github.com/advanced-systems/anonpy/ for documentation.
 
 from .anonpy import AnonPy
 from .endpoint import Endpoint
-from .providers import PixelDrain
