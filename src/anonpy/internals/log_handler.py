@@ -26,15 +26,15 @@ class LogHandler:
         self.__logger = getLogger(__name__)
         self.__logger.setLevel(level.value)
 
-    def add_handler(self: Self, target: Optional[Union[str, Path]]=None) -> None:
+    def add_handler(self: Self, name: Optional[Union[str, Path]]=None) -> None:
         """
-        Add a file handler to this logger instance. If no `target` is specified,
-        log output to console (`stdout`) instead.
+        Add a file handler to this logger instance. If no `name` is specified,
+        log output to `stdout` instead.
         """
         formatter = None
-        extension = Path(target).suffix if target is not None else "*"
+        target = Path(name).suffix if name is not None else "console"
 
-        match extension:
+        match target:
             case ".log" | ".dat" | ".txt":
                 formatter = Formatter(
                     "%(asctime)s [%(levelname)s]::%(name)s - %(message)s",
@@ -44,15 +44,17 @@ class LogHandler:
                 raise NotImplementedError()
             case ".csv":
                 raise NotImplementedError()
-            case _:
+            case "console":
                 console = StreamHandler(sys.stdout)
                 formatter = Formatter("%(asctime)s [%(levelname)-5.5s] %(message)s")
                 console.setFormatter(formatter)
                 self.__logger.addHandler(console)
                 return
+            case _:
+                raise NotImplementedError()
 
-        target.touch(exist_ok=True)
-        handler = FileHandler(self.path.joinpath(target))
+        name.touch(exist_ok=True)
+        handler = FileHandler(self.path.joinpath(name))
         handler.setFormatter(formatter)
         self.__logger.addHandler(handler)
 
