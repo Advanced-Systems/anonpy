@@ -21,12 +21,12 @@ class PixelDrain(AnonPy):
         ) -> None:
         self._api = "https://pixeldrain.com/api/"
         self._endpoint = Endpoint(upload="/file", download="file/{}", preview="/file/{}/info")
-        self.enable_logging = enable_logging
 
         super().__init__(
             self._api,
             endpoint=self._endpoint,
             token=token,
+            enable_logging=enable_logging,
             timeout=timeout,
             total=total,
             status_forcelist=status_forcelist,

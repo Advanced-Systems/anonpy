@@ -66,6 +66,7 @@ def main() -> None:
     try:
         # NOTE: Uses the PixelDrain provider by default for now
         provider = PixelDrain(**kwargs)
+        provider.logger.add_handler()
 
         match args.command:
             case "preview":
