@@ -41,9 +41,7 @@ CLI or lightweight GUI for direct client usage.
 
 ## Installation
 
-> ⚠ It is currently not possible to install this library with `pip` because
-> the name `anonpy` is currently being used by an another (abandoned) project
-> on PyPI. We are in talks about transferring this name to our project.
+> ⚠ It is currently not possible to install this library with `pip`.
 
 This library can be installed with:
 
@@ -112,6 +110,9 @@ anonymous file sharing website <https://anonfiles.com> shut down due to overwhel
 abuse by the community, which was the driving factor for creating a backend-agnostic
 library that can stand the test of time. That's why to this day, `anonpy` still
 uses the anonfiles logo as a small nod to its past.
+
+Special thanks to [@aaronlyy](https://github.com/aaronlyy) for passing on the
+PyPI name [`anonpy`](https://pypi.org/project/anonpy/) to [@StefanGreve](https://github.com/aaronlyy).
 
 See also the list of [contributors](https://github.com/Advanced-Systems/anonpy/contributors)
 who participated in the development of this project.
