@@ -8,6 +8,7 @@ from logging import FileHandler, Formatter, StreamHandler, getLogger
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Self, Union
 
+from .csv_formatter import CsvFormatter
 from .json_formatter import JsonFormatter
 
 
@@ -33,6 +34,7 @@ class LogHandler:
         self.level = level
         self.path = Path(path) if path is not None else None
         self.encoding = encoding
+        self.formatter = None
 
         self.__logger = getLogger(__name__)
         self.__logger.setLevel(level.value)
@@ -44,35 +46,39 @@ class LogHandler:
         self.path = Path(path)
         return self
 
-    def add_handler(self: Self, name: Optional[Union[str, Path]]=None) -> Self:
+    def add_handler(
+            self: Self,
+            name: Optional[Union[str, Path]]=None,
+            layout: Optional[Union[str, Dict[str,str]]]=None
+        ) -> Self:
         """
         Add a file handler to this logger instance. If no `name` is specified,
         log output to `stdout` instead.
+
+        Note that plain log files or console logs should define the layout as a `str`.
         """
-        formatter = None
         target = Path(name).suffix if name is not None else "console"
+        default_layout = "%(asctime)s [%(levelname)s] %(name)s - %(message)s"
+        default_structured_layout = {
+            "timestamp": "asctime",
+            "level": "levelname",
+            "name": "name",
+            "file": "filename",
+            "line": "lineno",
+            "message": "message"
+        }
 
         match target:
             case ".log" | ".dat" | ".txt":
-                formatter = Formatter(
-                    "%(asctime)s [%(levelname)s]::%(name)s - %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S"
-                )
+                self.formatter = Formatter(default_layout or layout)
             case ".csv":
-                raise NotImplementedError("TODO")
+                self.formatter = CsvFormatter(fmt_dict=layout or default_structured_layout)
             case ".json":
-                formatter = JsonFormatter({
-                    "timestamp": "asctime",
-                    "level": "levelname",
-                    "name": "name",
-                    "file": "filename",
-                    "line": "lineno",
-                    "message": "message"
-                })
+                self.formatter = JsonFormatter(fmt_dict=layout or default_structured_layout)
             case "console":
                 console = StreamHandler(sys.stdout)
-                formatter = Formatter("%(asctime)s [%(levelname)-5.5s] %(message)s")
-                console.setFormatter(formatter)
+                self.formatter = Formatter(default_layout or layout)
+                console.setFormatter(self.formatter)
                 self.__logger.addHandler(console)
                 return self
             case _:
@@ -81,11 +87,14 @@ class LogHandler:
         log_file = self.path.joinpath(name)
         log_file.touch(exist_ok=True)
         handler = FileHandler(log_file)
-        handler.setFormatter(formatter)
+        handler.setFormatter(self.formatter)
         self.__logger.addHandler(handler)
         return self
 
-    def get_log_history(self: Self, name: Union[str, Path]) -> Union[List[str], List[List[str]], Dict[str, Any]]:
+    def get_log_history(
+            self: Self,
+            name: Union[str, Path]
+        ) -> Union[List[str], List[List[str]], Dict[str, Any]]:
         """
         Return the log file content.
 
@@ -107,7 +116,7 @@ class LogHandler:
                     # The JsonFormatter appends records on a line-by-line basis,
                     # which is why it's not possible to save the log file as a
                     # valid JSON file on write
-                    lines = ",".join(file_handler.readlines()).replace('\n', '')
+                    lines = ",".join(file_handler.readlines()).replace("\n", "")
                     return json.loads(f"[{lines}]")
                 case _:
                     raise NotImplementedError()
