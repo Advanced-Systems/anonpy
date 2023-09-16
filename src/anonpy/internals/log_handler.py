@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
+import csv
+import json
 import sys
 from enum import Enum, unique
-from logging import FileHandler, Formatter, getLogger, StreamHandler
+from logging import FileHandler, Formatter, StreamHandler, getLogger
 from pathlib import Path
-from typing import Self, Union, Optional
+from typing import Any, Dict, List, Optional, Self, Union
+
+from .json_formatter import JsonFormatter
+
 
 @unique
 class LogLevel(Enum):
@@ -16,17 +21,30 @@ class LogLevel(Enum):
     CRITICAL = 50
 
 class LogHandler:
-    def __init__(self: Self, path: Union[str, Path], level: LogLevel) -> None:
+    def __init__(
+            self: Self,
+            level: LogLevel,
+            path: Optional[Union[str, Path]]=None,
+            encoding: str="utf-8"
+        ) -> None:
         """
         Instantiate a new logger object.
         """
-        self.path = Path(path)
         self.level = level
+        self.path = Path(path) if path is not None else None
+        self.encoding = encoding
 
         self.__logger = getLogger(__name__)
         self.__logger.setLevel(level.value)
 
-    def add_handler(self: Self, name: Optional[Union[str, Path]]=None) -> None:
+    def set_base_path(self: Self, path: Union[str, Path]) -> Self:
+        """
+        Set the log file's base path.
+        """
+        self.path = Path(path)
+        return self
+
+    def add_handler(self: Self, name: Optional[Union[str, Path]]=None) -> Self:
         """
         Add a file handler to this logger instance. If no `name` is specified,
         log output to `stdout` instead.
@@ -40,23 +58,59 @@ class LogHandler:
                     "%(asctime)s [%(levelname)s]::%(name)s - %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S"
                 )
-            case ".json":
-                raise NotImplementedError()
             case ".csv":
-                raise NotImplementedError()
+                raise NotImplementedError("TODO")
+            case ".json":
+                formatter = JsonFormatter({
+                    "timestamp": "asctime",
+                    "level": "levelname",
+                    "name": "name",
+                    "file": "filename",
+                    "line": "lineno",
+                    "message": "message"
+                })
             case "console":
                 console = StreamHandler(sys.stdout)
                 formatter = Formatter("%(asctime)s [%(levelname)-5.5s] %(message)s")
                 console.setFormatter(formatter)
                 self.__logger.addHandler(console)
-                return
+                return self
             case _:
                 raise NotImplementedError()
 
-        name.touch(exist_ok=True)
-        handler = FileHandler(self.path.joinpath(name))
+        log_file = self.path.joinpath(name)
+        log_file.touch(exist_ok=True)
+        handler = FileHandler(log_file)
         handler.setFormatter(formatter)
         self.__logger.addHandler(handler)
+        return self
+
+    def get_log_history(self: Self, name: Union[str, Path]) -> Union[List[str], List[List[str]], Dict[str, Any]]:
+        """
+        Return the log file content.
+
+        Raise a `FileNotFoundError` if the file doesn't exist.
+        """
+        target = Path(name).suffix
+        file = self.path.joinpath(name)
+
+        if not file.exists():
+            raise FileNotFoundError()
+
+        with open(file, mode="r", encoding=self.encoding) as file_handler:
+            match target:
+                case ".log" | ".dat" | ".txt":
+                    return file_handler.readlines()
+                case ".csv":
+                    return [row for row in csv.reader(file_handler)]
+                case ".json":
+                    # The JsonFormatter appends records on a line-by-line basis,
+                    # which is why it's not possible to save the log file as a
+                    # valid JSON file on write
+                    lines = ",".join(file_handler.readlines()).replace('\n', '')
+                    return json.loads(f"[{lines}]")
+                case _:
+                    raise NotImplementedError()
 
     #region log utilities
 
