@@ -6,8 +6,15 @@ from typing import Dict, Optional, Self
 
 
 class JsonFormatter(Formatter):
-    def __init__(self, fmt_dict: Optional[Dict]=None, time_format: str="%Y-%m-%dT%H:%M:%S", msec_format: str="%s.%03dZ") -> None:
-        self.fmt_dict = fmt_dict if fmt_dict is not None else {"message": "message"}
+    def __init__(
+            self: Self,
+            fmt_dict: Optional[Dict]=None,
+            time_format: str="%Y-%m-%dT%H:%M:%S",
+            msec_format: str="%s.%03dZ"
+        ) -> None:
+        # The code for this class is based on an answer by Bogdan Mircea on Stack Overflow:
+        # https://stackoverflow.com/a/70223539/10827244
+        self.fmt_dict = fmt_dict if fmt_dict is not None else {"timestamp": "asctime", "level": "levelname", "message": "message"}
         self.default_time_format = time_format
         self.default_msec_format = msec_format
         self.datefmt = None
