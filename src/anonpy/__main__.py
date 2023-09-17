@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 
 from .anonpy import AnonPy
 from .cli import build_parser
-from .internals import ConfigHandler, RequestHandler, __credits__, __package__, __version__, read_file, str2bool
+from .internals import ConfigHandler, RequestHandler, __credits__, __package__, __version__, get_resource_path, read_file, str2bool
 from .providers import PixelDrain
 from .security import Checksum, MD5
 
@@ -64,9 +64,13 @@ def main() -> None:
     }
 
     try:
+        log_file = "cli.log"
+        module_folder = get_resource_path(__package__)
         # NOTE: Uses the PixelDrain provider by default for now
         provider = PixelDrain(**kwargs)
-        provider.logger.add_handler()
+        provider.logger \
+            .set_base_path(module_folder) \
+            .add_handler(log_file)
 
         match args.command:
             case "preview":
@@ -87,13 +91,14 @@ def main() -> None:
     except Exception as exception:
         print(exception, file=sys.stderr)
     except:
-        print("\n".join([ # TODO: Add log file path to error message
+        print("\n".join([
             "An unhandled exception was thrown. The log file may give you more",
-            "insight into what went wrong. Alternatively, file a bug report on",
-            "GitHub at https://github.com/advanced-systems/anonpy."
+            f"insight into what went wrong: {module_folder!r}.\nAlternatively, file",
+            "a bug report on GitHub at https://github.com/advanced-systems/anonpy."
         ]), file=sys.stderr)
     finally:
         deinit()
+        provider.logger.shutdown()
 
 if __name__ == "__main__":
     main()
