@@ -1,0 +1,35 @@
+name: PyPI Pre-Release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published, edited]
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [ '3.11' ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Development Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements/development.txt
+        pip install -e .
+    - name: Build and Publish to https://test.pypi.org/project/anonypy/
+      env:
+        TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+      run: |
+        # builds both sdist and wheel
+        python -m build --no-isolation
+        twine upload --repository testpypi dist/**
