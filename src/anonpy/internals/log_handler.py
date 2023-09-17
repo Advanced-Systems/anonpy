@@ -162,6 +162,8 @@ class LogHandler:
                 handler.flush()
                 handler.close()
             except (OSError, ValueError):
+                # Ignore errors which might be caused because handlers have been
+                # closed but references to them are still around at application exit.
                 pass
             finally:
                 handler.release()
