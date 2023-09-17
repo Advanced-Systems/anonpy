@@ -8,7 +8,7 @@ from tqdm import tqdm
 from tqdm.utils import CallbackIOWrapper
 
 from .endpoint import Endpoint
-from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, _progressbar_options, get_resource_path
+from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, _progressbar_options
 
 
 class AnonPy(RequestHandler, LogHandler):
