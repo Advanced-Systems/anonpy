@@ -34,7 +34,9 @@ class LogHandler:
         self.level = level
         self.path = Path(path) if path is not None else None
         self.encoding = encoding
-        self.formatter = None
+        self.formatter: Union[Formatter, JsonFormatter, CsvFormatter] = None
+        # The file name (including extension) is used as a key
+        self.handlers: Dict[str, FileHandler] = {}
 
         self.__logger = getLogger(__name__)
         self.__logger.setLevel(level.value)
@@ -88,17 +90,24 @@ class LogHandler:
         log_file.touch(exist_ok=True)
         handler = FileHandler(log_file)
         handler.setFormatter(self.formatter)
+        self.handlers[log_file.name] = handler
         self.__logger.addHandler(handler)
         return self
 
     def get_log_history(
             self: Self,
             name: Union[str, Path]
-        ) -> Union[List[str], List[List[str]], Dict[str, Any]]:
+        ) -> Union[List[str], List[List[str]], List[Dict[str, Any]]]:
         """
         Return the log file content.
 
+        ### Return Types
+        - Text: `List[str]`
+        - CSV: `List[List[str]]`
+        - JSON: `List[Dict[str, Any]]`
+
         Raise a `FileNotFoundError` if the file doesn't exist.
+        Raise a `NotImplementedError` if an unsupported file format is requested.
         """
         target = Path(name).suffix
         file = self.path.joinpath(name)
@@ -121,6 +130,26 @@ class LogHandler:
                 case _:
                     raise NotImplementedError()
 
+    def unlink(self: Self, name: Union[str, Path], missing_ok: bool=False) -> None:
+        """
+        Remove a log file, located in `self.path`.
+
+        Raise a `FileNotFoundError` if `name` is an invalid log file name.
+        """
+        file = self.path.joinpath(name)
+        handler = self.handlers.get(file.name, None)
+
+        if handler is None or not file.exists():
+            raise FileNotFoundError("This log file doesn't exist, or wasn't registered as a handler to this logger")
+
+        # We need to remove and close the handler before unlinking the log file,
+        # otherwise it will still be used by the logging process, which in turn
+        # would cause an error (e.g. WinError 32) on deletion that results in an
+        # application crash
+        self.__logger.removeHandler(handler)
+        handler.close()
+        file.unlink(missing_ok)
+
     #region log utilities
 
     def log(
@@ -132,37 +161,42 @@ class LogHandler:
         ) -> None:
         """
         Log `message % args` with severity `level`.
+
+        Raise a `TypeError` exception if the logger is configured incorrectly.
         """
-        if not hide: self.__logger.log(level.value, message, *args)
+        if hide: return
+        if not self.handlers: raise TypeError("Logger configured incorrectly: no handler attached this object")
+
+        self.__logger.log(level.value, message, *args)
 
     def debug(self: Self, message: str, *args: object, hide: bool=False) -> None:
         """
         Log `message % args` with severity `LogLevel.DEBUG`.
         """
-        if not hide: self.__logger.debug(message, *args)
+        self.log(LogLevel.DEBUG, message, *args, hide=hide)
 
     def info(self: Self, message: str, *args: object, hide: bool=False) -> None:
         """
         Log `message % args` with severity `LogLevel.INFO`.
         """
-        if not hide: self.__logger.info(message, *args)
+        self.log(LogLevel.INFO, message, *args, hide=hide)
 
     def warning(self: Self, message: str, *args: object, hide: bool=False) -> None:
         """
         Log `message % args` with severity `LogLevel.WARNING`.
         """
-        if not hide: self.__logger.warning(message, *args)
+        self.log(LogLevel.WARNING, message, *args, hide=hide)
 
     def error(self: Self, message: str, *args: object, hide: bool=False) -> None:
         """
         Log `message % args` with severity `LogLevel.ERROR`.
         """
-        if not hide: self.__logger.error(message, *args)
+        self.log(LogLevel.ERROR, message, *args, hide=hide)
 
     def critical(self: Self, message: str, *args: object, hide: bool=False) -> None:
         """
         Log `message % args` with severity `LogLevel.CRITICAL`.
         """
-        if not hide: self.__logger.critical(message, *args)
+        self.log(LogLevel.CRITICAL, message, *args, hide=hide)
 
     #endregion
