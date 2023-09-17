@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import functools
+import os
+import platform
 import warnings
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Iterator, Union
-
-from tqdm import tqdm
 
 
 def deprecate(message: str) -> None:
@@ -23,6 +23,26 @@ def ignore_warnings(category: Warning):
                 return func(*args, **kwargs)
         return wrapper
     return ignore_warnings_decorator
+
+def get_resource_path(package_name: str) -> Path:
+    """
+    Return a platform-specific resource directory for storing globally
+    accessible package files.
+    """
+    parent = None
+
+    match platform.system():
+        case "Windows":
+            parent = Path(os.path.expandvars("%LOCALAPPDATA%"))
+        case "Darwin":
+            parent = Path.home().joinpath("Library").joinpath("Application Support")
+        case _:
+            # Assume Unix-like file system
+            parent = Path.home().joinpath(".config")
+
+    resource_path = parent.joinpath(package_name)
+    os.makedirs(resource_path, exist_ok=True)
+    return resource_path
 
 def join_url(url: str, *paths) -> str:
     """
