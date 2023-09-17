@@ -150,6 +150,22 @@ class LogHandler:
         handler.close()
         file.unlink(missing_ok)
 
+    def shutdown(self: Self) -> None:
+        """
+        Perform any cleanup actions in the logging system (e.g. flushing buffers).
+
+        Should be called at application exit.
+        """
+        for handler in reversed(self.handlers.values()):
+            try:
+                handler.acquire()
+                handler.flush()
+                handler.close()
+            except (OSError, ValueError):
+                pass
+            finally:
+                handler.release()
+
     #region log utilities
 
     def log(
