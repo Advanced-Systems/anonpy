@@ -33,16 +33,16 @@ def get_resource_path(package_name: str) -> Path:
 
     match platform.system():
         case "Windows":
-            parent = Path(os.path.expandvars('%LOCALAPPDATA%'))
+            parent = Path(os.path.expandvars("%LOCALAPPDATA%"))
         case "Darwin":
             parent = Path.home().joinpath("Library").joinpath("Application Support")
         case _:
             # Assume Unix-like file system
             parent = Path.home().joinpath(".config")
 
-    resource = parent.joinpath(package_name)
-    os.makedirs(resource, exist_ok=True)
-    return resource
+    resource_path = parent.joinpath(package_name)
+    os.makedirs(resource_path, exist_ok=True)
+    return resource_path
 
 def join_url(url: str, *paths) -> str:
     """
