@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
+from typing import List, Optional
+
 from setuptools import find_packages, setup
-from typing import Optional, List
 
 #region helper functions
 
@@ -52,7 +55,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    keywords="anonfile rest api anonymous file sharing"
+    keywords="advanced systems anonpy rest api anonymous file sharing"
 )
 
 print("setup is complete")
