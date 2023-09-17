@@ -2,11 +2,19 @@
 
 ## Preamble
 
-Please take the time to carefully review the sections of this document that pertain
+Please take your time to carefully review the sections of this document that pertain
 to your specific problem. If you have any other questions to which you couldn't find
 and answer here, feel free to use [Discussions / Q&A](https://github.com/Advanced-Systems/anonpy/discussions/categories/q-a)
 to seek more help. You may also want to have a look at the [Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
 page to learn more about internal development processes.
+
+## Philosophy
+
+This library will always only support the latest mature version of Python in order
+to take advantage of the newest language features and performance improvements.
+As such, care should be taken to keep third-party packages up-to-date. For similar
+reasons, community support only exists for the most recent release as per the terms
+of [license](https://github.com/Advanced-Systems/anonpy/blob/master/LICENSE).
 
 ## Software Development Life Cycle
 
@@ -26,13 +34,13 @@ together to iron out the specifics.
 
 A *story* should contain the following headers:
 
-1. **Preamble** - *brief description about the suggested feature and its benifits*
+1. **Preamble** - *brief description about the suggested feature and its benefits*
 2. **Requirements** - *concise checkboxes for developers for later use in PR reviews*
 3. **Remarks** - *some notes or open questions that need to be addressed during development*
 4. **Planning Status** - *targeted release version*
 
 Once a feature suggestions has been finalized, it is ready to be converted into
-an issue by the Repository owner (`@StefanGreve`).
+an issue by the Repository owner ([`@StefanGreve`](https://github.com/StefanGreve)).
 
 ## Branching Policy
 
@@ -52,6 +60,9 @@ can be merged separately.
 ### Commit Etiquette
 
 It is recommended to keep all commits [atomic](https://en.wikipedia.org/wiki/Atomic_commit).
+At Advanced Systems, *Show Your Work* (SYW) requires you to keep your commit history
+linear; a single short commit message would be deemed insufficient for submitting
+a non-trivial amount of changes at once.
 
 Commit messages should always start with a verb in simple present. Good candidates
 for this are, i.a.
@@ -81,4 +92,4 @@ Without going into great lengths, try to take the following advice to heart:
 - function names *must* obey the same rules as commit message sentence starters
 - functions and classes *must* be annotated by doc strings
 - all functions *must* use type annotations
-- comments *should* be spelled correctly
+- comments *should* be spelled correctly; the same goes for commit messages
