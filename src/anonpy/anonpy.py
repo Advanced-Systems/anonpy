@@ -55,10 +55,7 @@ class AnonPy(RequestHandler, LogHandler):
 
         self.endpoint = endpoint
         self.enable_logging = enable_logging
-        self.logger = LogHandler(
-            path=get_resource_path(__package__),
-            level=LogLevel.DEBUG
-        )
+        self.logger = LogHandler(level=LogLevel.DEBUG)
 
     def upload(self: Self, path: Union[str, Path], progressbar: bool=False) -> Dict:
         path = Path(path)
