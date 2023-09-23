@@ -18,6 +18,12 @@ of [license](https://github.com/Advanced-Systems/anonpy/blob/master/LICENSE).
 
 ## Software Development Life Cycle
 
+*Bug Reports* and *Feature Requests* can be tracked via the project's
+[kanban](https://github.com/orgs/Advanced-Systems/projects/6)
+board. In general, pull requests enter the *In Review* status once they are no
+longer marked as a
+[draft](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
+
 ### Bug Reports
 
 Errors should be submitted on GitHub in [Issues](https://github.com/Advanced-Systems/anonpy/issues).
