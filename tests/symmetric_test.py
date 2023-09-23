@@ -3,6 +3,7 @@
 import sys
 from pathlib import Path
 from typing import Self
+from uuid import uuid4
 
 import pytest
 
@@ -31,7 +32,7 @@ class TestSymmetric:
         sym = Symmetric(key_storage_path=Path.home())
         sym.generate_key(password, key_derivation_function=kdf)
         message = "Hello, World!"
-        sym_key = f"test_{len(password)}.key"
+        sym_key = f"test_{uuid4()}.key"
 
         try:
             # Act
@@ -52,7 +53,7 @@ class TestSymmetric:
         sym = Symmetric()
         sym.generate_key(password, key_derivation_function=kdf)
         message = "Hello, World!"
-        document = Path.cwd().joinpath(f"test_symmetric_{len(password)}.txt")
+        document = Path.cwd().joinpath(f"test_symmetric_{uuid4()}.txt")
         document.touch(exist_ok=True)
         document.write_text(message)
 

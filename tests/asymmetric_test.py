@@ -3,10 +3,12 @@
 import sys
 from pathlib import Path
 from typing import Self
+from uuid import uuid4
 
 import pytest
 
 from anonpy.security import Asymmetric
+
 
 class TestAsymmetric:
     def test_encryption_and_decryption(self: Self) -> Self:
@@ -30,8 +32,9 @@ class TestAsymmetric:
         asym = Asymmetric(key_storage_path=Path.cwd())
         asym.generate_keys()
         message = "Hello, World!"
-        private_key = f"test_private_key_{len(password)}.pem"
-        public_key = f"test_public_key_{len(password)}.pem"
+        identifier = uuid4()
+        private_key = f"test_private_key_{identifier}.pem"
+        public_key = f"test_public_key_{identifier}.pem"
 
         # Act
         asym.store_private_key(private_key, password)
@@ -51,7 +54,7 @@ class TestAsymmetric:
         asym = Asymmetric()
         asym.generate_keys()
         message = "Hello, World!"
-        document = Path.cwd().joinpath("test_asymmetric.txt")
+        document = Path.cwd().joinpath(f"test_asymmetric_{uuid4()}.txt")
         document.touch(exist_ok=True)
         document.write_text(message)
 
