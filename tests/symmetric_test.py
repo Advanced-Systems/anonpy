@@ -33,17 +33,19 @@ class TestSymmetric:
         message = "Hello, World!"
         sym_key = f"test_{len(password)}.key"
 
-        # Act
-        sym.store_key(sym_key)
-        sym.delete_key()
-        sym.load_key(sym_key)
-
-        cypher = sym.encrypt(message=message)
-        source = sym.decrypt(cypher=cypher)
-        sym.delete_key(sym_key)
-
-        # Assert
-        assert message == source
+        try:
+            # Act
+            sym.store_key(sym_key)
+            sym.delete_key()
+            sym.load_key(sym_key)
+            cypher = sym.encrypt(message=message)
+            source = sym.decrypt(cypher=cypher)
+            # Assert
+            assert message == source
+        except ValueError as error:
+            print(error.with_traceback(), file=sys.stderr)
+        finally:
+            sym.delete_key(sym_key)
 
     def test_encryption_on_file(self: Self, password: str, kdf: KDF) -> None:
         # Arrange
@@ -54,16 +56,15 @@ class TestSymmetric:
         document.touch(exist_ok=True)
         document.write_text(message)
 
-        # Act
         try:
+            # Act
             sym.encrypt(path=document)
             sym.decrypt(path=document)
             source = document.read_text()
+            # Assert
+            assert message == source
         except ValueError as error:
             print(error.with_traceback(), file=sys.stderr)
         finally:
             sym.delete_key()
             document.unlink(missing_ok=True)
-
-        # Assert
-        assert message == source

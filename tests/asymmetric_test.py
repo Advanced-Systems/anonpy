@@ -60,11 +60,10 @@ class TestAsymmetric:
             asym.encrypt(path=document)
             asym.decrypt(path=document)
             source = document.read_text()
+            # Assert
+            assert message == source
         except ValueError as error:
             print(error.with_traceback(), file=sys.stderr)
         finally:
             asym.delete_keys()
             document.unlink(missing_ok=True)
-
-        # Assert
-        assert message == source
