@@ -30,18 +30,22 @@
 
 ## About
 
-The `anonpy` module provides the facilities for rapid application development in
-the realm of anonymous file sharing. It implements an extensible provider-independent
-class system for communicating with any REST API, and also comes with an intuitive
-CLI or lightweight GUI for direct client usage.
+The `anonpy` module makes it easier to communicate with REST APIs for anonymously
+uploading and downloading files. It implements an extensible provider-independent
+class system and also comes with an intuitive CLI or lightweight GUI for interactive
+usage.
 
 > ⚠ This project is still a work in progress. Keep an eye on the
 > [Roadmap](https://github.com/Advanced-Systems/anonpy/milestone/1),
 > which documents the progress path toward the first major release.
 
+Documentation for this project can be found on the GitHub
+[Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
+pages.
+
 ## Installation
 
-> ⚠ It is currently not possible to install this library with `pip`.
+> ⚠ It is currently not possible to install this library with `pip` yet.
 
 This library can be installed with:
 
@@ -81,9 +85,6 @@ print(f"{download=}")
 upload = anon.upload("homework.docx", progressbar=True)
 print(f"{upload=}")
 ```
-
-You can also use the [Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
-page for more in-depth examples or to read more about intrinsic development details.
 
 ## Command Line Interface
 
