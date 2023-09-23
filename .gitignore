@@ -117,6 +117,7 @@ venv.bak/
 # Vscode project
 .vscode
 !.vscode/extensions.json
+!.vscode/settings.json
 
 # Rope project settings
 .ropeproject
