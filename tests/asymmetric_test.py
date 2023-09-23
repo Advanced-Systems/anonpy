@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
+import sys
 from pathlib import Path
 from typing import Self
 
 import pytest
 
-from anonpy.security import Asymmetric, generate_random_password
+from anonpy.security import Asymmetric
 
 class TestAsymmetric:
     def test_encryption_and_decryption(self: Self) -> Self:
@@ -18,19 +19,19 @@ class TestAsymmetric:
         # Act
         cypher = asym.encrypt(message=message)
         source = asym.decrypt(cypher=cypher)
+        asym.delete_keys()
 
         # Assert
         assert message == source
-        asym.delete_keys()
 
-    @pytest.mark.parametrize("password", [None, generate_random_password(32)])
+    @pytest.mark.parametrize("password", sorted(["", "Di3GQNwpurf5ymbgs/bubCOrWpAwNe+0arsdoakmlzo="]))
     def test_encryption_and_decryption_with_file_key(self: Self, password: str) -> None:
         # Arrange
         asym = Asymmetric(key_storage_path=Path.cwd())
         asym.generate_keys()
         message = "Hello, World!"
-        private_key = "test-private-key.pem"
-        public_key = "test-public-key.pem"
+        private_key = f"test_private_key_{len(password)}.pem"
+        public_key = f"test_public_key_{len(password)}.pem"
 
         # Act
         asym.store_private_key(private_key, password)
@@ -40,26 +41,30 @@ class TestAsymmetric:
 
         cypher = asym.encrypt(message=message)
         source = asym.decrypt(cypher=cypher)
+        asym.delete_keys(private_key, public_key)
 
         # Assert
         assert message == source
-        asym.delete_keys(private_key, public_key)
 
     def test_encryption_and_decryption_on_file(self: Self) -> None:
         # Arrange
         asym = Asymmetric()
         asym.generate_keys()
         message = "Hello, World!"
-        document = Path.cwd().joinpath("test.txt")
-        document.touch(exist_ok=False)
+        document = Path.cwd().joinpath("test_asymmetric.txt")
+        document.touch(exist_ok=True)
         document.write_text(message)
 
         # Act
-        asym.encrypt(path=document)
-        asym.decrypt(path=document)
-        source = document.read_text()
+        try:
+            asym.encrypt(path=document)
+            asym.decrypt(path=document)
+            source = document.read_text()
+        except ValueError as error:
+            print(error.with_traceback(), file=sys.stderr)
+        finally:
+            asym.delete_keys()
+            document.unlink(missing_ok=True)
 
         # Assert
         assert message == source
-        asym.delete_keys()
-        document.unlink(missing_ok=False)
