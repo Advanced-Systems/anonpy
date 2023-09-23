@@ -26,6 +26,11 @@ longer marked as a
 
 ### Bug Reports
 
+**Security vulnerabilities should be disclosed through the appropriate channels.**
+Please follow the procedure described in the
+[Security Policy](https://github.com/Advanced-Systems/anonpy/blob/master/SECURITY.md)
+for reporting vulnerabilities.
+
 Errors should be submitted on GitHub in [Issues](https://github.com/Advanced-Systems/anonpy/issues).
 Try to fill out the bug report template to the best of your knowledge.
 Feel free to add additional information that you think could be remotely helpful
