@@ -109,7 +109,7 @@ class Asymmetric:
         """
         Generates a new RSA public key.
 
-        Raise a `TyperError` exception if a private key hasn't been generated yet.
+        Raise a `TypeError` exception if a private key hasn't been generated yet.
         """
         if (self.__private_key is None):
             raise TypeError("unable to generate a public key without a private key")

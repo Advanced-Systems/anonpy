@@ -172,7 +172,7 @@ class Symmetric:
         - symmetric key files should have a `.key` file extension
         """
         if (self.key_storage_path is None):
-            raise TypeError("key_storage_path is udefined")
+            raise TypeError("key_storage_path is undefined")
         if (self.__fernet is None):
             raise TypeError("cannot perform this operation without a fernet token")
 
