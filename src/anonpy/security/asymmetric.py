@@ -26,11 +26,11 @@ class Asymmetric:
     >>> asym.generate_keys()
 
     >>> # encrypt a message
-    >>> cypher = asym.encrypt(message="Hello, World!")
-    >>> print(f"{cypher=}")
+    >>> cipher = asym.encrypt(message="Hello, World!")
+    >>> print(f"{cipher=}")
 
-    >>> # decrypt the cypher again
-    >>> source = asym.decrypt(cypher=cypher)
+    >>> # decrypt the cipher again
+    >>> source = asym.decrypt(cipher=cipher)
     >>> print(f"{source=}")
     ```
     """
@@ -243,7 +243,7 @@ class Asymmetric:
     def encrypt(self: Self, path: Union[str, Path], encoding: str="utf-8") -> None:
         """
         Encrypt the file located in `path` using the cryptographically secure RSA
-        cryptosystem and overwrite its content with the cypher text.
+        cryptosystem and overwrite its content with the cipher text.
 
         Raise a `TypeError` exception if the public key hasn't been generated yet.
 
@@ -256,7 +256,7 @@ class Asymmetric:
     def encrypt(self: Self, message: str, encoding: str="utf-8") -> bytes:
         """
         Encrypt the file located in `path` using the cryptographically secure RSA
-        cryptosystem and return the cypher.
+        cryptosystem and return the cipher.
 
         Raise a `TypeError` exception if the public key hasn't been generated yet.
 
@@ -284,11 +284,11 @@ class Asymmetric:
             data = message.encode(encoding)
             return self.__public_key.encrypt(data, oaep)
 
-        # replace file content with cypher
+        # replace file content with cipher
         file = Path(path)
         source = file.read_bytes()
-        cypher = self.__public_key.encrypt(source, oaep)
-        file.write_bytes(cypher)
+        cipher = self.__public_key.encrypt(source, oaep)
+        file.write_bytes(cipher)
 
     @overload
     def decrypt(self: Self, path: Union[str, Path], encoding: str="utf-8") -> None:
@@ -303,9 +303,9 @@ class Asymmetric:
         ...
 
     @overload
-    def decrypt(self: Self, cypher: bytes, encoding: str="utf-8") -> str:
+    def decrypt(self: Self, cipher: bytes, encoding: str="utf-8") -> str:
         """
-        Decrypt a cypher that was encrypted with a RSA cryptosystem.
+        Decrypt a cipher that was encrypted with a RSA cryptosystem.
 
         Raise a `TypeError` exception if the private key hasn't been generated yet.
 
@@ -317,23 +317,23 @@ class Asymmetric:
     def decrypt(
             self: Self,
             path: Optional[Union[str, Path]]=None,
-            cypher: Optional[bytes]=None,
+            cipher: Optional[bytes]=None,
             encoding: str="utf-8"
         ) -> Optional[str]:
         if self.__private_key is None:
             raise TypeError("cannot perform this operation without a private key")
 
-        if path is not None and cypher is not None:
-            raise TypeError("illegal combinations of arguments (supplied both path and cypher)")
+        if path is not None and cipher is not None:
+            raise TypeError("illegal combinations of arguments (supplied both path and cipher)")
 
         sha256 = SHA256()
         oaep = OAEP(mgf=MGF1(sha256), algorithm=sha256, label=None)
 
         if path is None:
-            return self.__private_key.decrypt(cypher, oaep).decode(encoding)
+            return self.__private_key.decrypt(cipher, oaep).decode(encoding)
 
-        # restore file from cypher
+        # restore file from cipher
         file = Path(path)
-        cypher = file.read_bytes()
-        source = self.__private_key.decrypt(cypher, oaep).decode(encoding)
+        cipher = file.read_bytes()
+        source = self.__private_key.decrypt(cipher, oaep).decode(encoding)
         file.write_text(source)

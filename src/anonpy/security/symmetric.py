@@ -35,11 +35,11 @@ class Symmetric:
     >>> sym.generate_key(password, key_derivation_function=KDF.PBKDF2HMAC)
 
     >>> # encrypt a message
-    >>> cypher = sym.encrypt(message="Hello, World!")
-    >>> print(f"{cypher=}")
+    >>> cipher = sym.encrypt(message="Hello, World!")
+    >>> print(f"{cipher=}")
 
-    >>> # decrypt the cypher again
-    >>> source = sym.decrypt(cypher=cypher)
+    >>> # decrypt the cipher again
+    >>> source = sym.decrypt(cipher=cipher)
     >>> print(f"{source=})
     ```
     """
@@ -192,7 +192,7 @@ class Symmetric:
     def encrypt(self: Self, path: Union[str, Path], encoding: str="utf-8") -> None:
         """
         Encrypt the file in `path` using a cryptographically secure `Fernet` token
-        and overwrite its content with the cypher text.
+        and overwrite its content with the cipher text.
 
         Raise a `TypeError` exception if the key hasn't been generated yet..
 
@@ -205,7 +205,7 @@ class Symmetric:
     def encrypt(self: Self, message: str, encoding: str="utf-8") -> bytes:
         """
         Encrypt `message` using a cryptographically secure `Fernet` token
-        and return the cypher.
+        and return the cipher.
 
         Raise a `TypeError` exception if the key hasn't been generated yet.
 
@@ -229,11 +229,11 @@ class Symmetric:
         if path is None:
             return self.__fernet.encrypt(message.encode(encoding))
 
-        # replace file content with cypher
+        # replace file content with cipher
         file = Path(path)
         source = file.read_bytes()
-        cypher = self.__fernet.encrypt(source)
-        file.write_bytes(cypher)
+        cipher = self.__fernet.encrypt(source)
+        file.write_bytes(cipher)
 
     @overload
     def decrypt(self: Self, path: Union[str, Path], encoding: str="utf-8") -> None:
@@ -248,9 +248,9 @@ class Symmetric:
         ...
 
     @overload
-    def decrypt(self: Self, cypher: bytes, encoding: str="utf-8") -> str:
+    def decrypt(self: Self, cipher: bytes, encoding: str="utf-8") -> str:
         """
-        Decrypt a cypher that was encrypted with a `Fernet` token.
+        Decrypt a cipher that was encrypted with a `Fernet` token.
 
         Raise a `TypeError` exception if the key hasn't been generated yet.
 
@@ -262,20 +262,20 @@ class Symmetric:
     def decrypt(
             self: Self,
             path: Optional[Union[str, Path]]=None,
-            cypher: Optional[bytes]=None,
+            cipher: Optional[bytes]=None,
             encoding: str="utf-8"
         ) -> Optional[str]:
         if (self.__fernet is None):
             raise TypeError("cannot perform this operation without a fernet token")
 
-        if path is not None and cypher is not None:
-            raise TypeError("illegal combinations of arguments (supplied both path and cypher)")
+        if path is not None and cipher is not None:
+            raise TypeError("illegal combinations of arguments (supplied both path and cipher)")
 
         if path is None:
-            return self.__fernet.decrypt(cypher).decode(encoding)
+            return self.__fernet.decrypt(cipher).decode(encoding)
 
-        # restore file from cypher
+        # restore file from cipher
         file = Path(path)
-        cypher = file.read_bytes()
-        source = self.__fernet.decrypt(cypher)
+        cipher = file.read_bytes()
+        source = self.__fernet.decrypt(cipher)
         file.write_bytes(source)

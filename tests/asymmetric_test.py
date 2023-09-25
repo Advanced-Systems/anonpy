@@ -19,8 +19,8 @@ class TestAsymmetric:
         message = "Hello, World!"
 
         # Act
-        cypher = asym.encrypt(message=message)
-        source = asym.decrypt(cypher=cypher)
+        cipher = asym.encrypt(message=message)
+        source = asym.decrypt(cipher=cipher)
         asym.delete_keys()
 
         # Assert
@@ -42,8 +42,8 @@ class TestAsymmetric:
         asym.delete_keys()
         asym.load_keys(public_key, private_key, password)
 
-        cypher = asym.encrypt(message=message)
-        source = asym.decrypt(cypher=cypher)
+        cipher = asym.encrypt(message=message)
+        source = asym.decrypt(cipher=cipher)
         asym.delete_keys(private_key, public_key)
 
         # Assert
