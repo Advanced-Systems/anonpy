@@ -25,9 +25,7 @@ class TestLogHandler(TestCase):
 
     @classmethod
     def tearDownClass(cls: Type[Self]) -> None:
-        cls.logger.unlink(cls.text_log)
-        cls.logger.unlink(cls.csv_log)
-        cls.logger.unlink(cls.json_log)
+        cls.logger.shutdown()
 
     def test_text_formatter(self: Self) -> None:
         # Arrange
@@ -42,6 +40,7 @@ class TestLogHandler(TestCase):
         # Assert
         self.assertTrue(self.logger.path.joinpath(self.text_log).exists())
         self.assertTrue(args.pop() in record)
+        self.logger.unlink(self.text_log)
 
     def test_csv_formatter(self: Self) -> None:
         # Arrange
@@ -56,6 +55,7 @@ class TestLogHandler(TestCase):
         # Assert
         self.assertTrue(self.logger.path.joinpath(self.csv_log).exists())
         self.assertTrue(args.pop() in record[-1])
+        self.logger.unlink(self.csv_log)
 
     def test_json_formatter(self: Self) -> None:
         # Arrange
@@ -72,3 +72,4 @@ class TestLogHandler(TestCase):
         self.assertTrue(self.logger.path.joinpath(self.json_log).exists())
         self.assertTrue(args.pop() in record.get("message", "n/a"))
         self.assertFalse(record.get("level", False))
+        self.logger.unlink(self.json_log)

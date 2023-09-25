@@ -173,7 +173,7 @@ class Asymmetric:
             raise TypeError("private key not initialized")
 
         encryption_algorithm = (
-            NoEncryption() if password is None
+            NoEncryption() if not password
             else BestAvailableEncryption(password.encode(encoding))
         )
 
@@ -214,7 +214,7 @@ class Asymmetric:
         raw_bytes = self.key_storage_path.joinpath(name).read_bytes()
         self.__private_key = serialization.load_pem_private_key(
             raw_bytes,
-            password=password.encode(encoding) if password is not None else None,
+            password=password.encode(encoding) if password else None,
             backend=default_backend()
         )
 

@@ -28,4 +28,4 @@ jobs:
         pip install -e .
     - name: Run Unit Tests
       run: |
-        pytest --verbose -s
+        pytest

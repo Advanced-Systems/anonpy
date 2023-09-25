@@ -133,7 +133,7 @@ class Symmetric:
         if (self.__fernet is not None):
             warn("replacing current fernet token", category=UserWarning, stacklevel=2)
 
-        if (password is None):
+        if not password:
             self.__key = Fernet.generate_key()
             self.__fernet = Fernet(self.__key)
             return
