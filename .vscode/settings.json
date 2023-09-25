@@ -14,10 +14,14 @@
         "anonfile",
         "anonfiles",
         "anonpy",
+        "endregion",
+        "fernet",
         "forcelist",
+        "getproxies",
         "Greve",
         "kanban",
         "pipx",
-        "tqdm"
+        "tqdm",
+        "urandom"
     ]
 }
