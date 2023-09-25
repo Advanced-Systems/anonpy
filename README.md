@@ -62,7 +62,7 @@ pipx install anonpy
 
 ## Library
 
-You can use `AnonPy` to interface with a wide variety of REST services by
+AnonPy can be used to interface with a wide variety of REST services by
 building a contract with the `Endpoint` class.
 
 ```python
@@ -115,13 +115,18 @@ uses the anonfiles logo as a small nod to its past.
 Special thanks to [@aaronlyy](https://github.com/aaronlyy) for passing on the
 PyPI name [`anonpy`](https://pypi.org/project/anonpy/) to [@StefanGreve](https://github.com/aaronlyy).
 
-See also the list of [contributors](https://github.com/Advanced-Systems/anonpy/contributors)
+See also the list of
+[contributors](https://github.com/Advanced-Systems/anonpy/contributors)
 who participated in the development of this project.
 
 ## Further Reading
 
-This Project is licensed under the [MIT](https://github.com/Advanced-Systems/anonpy/blob/master/LICENSE) license.
-Check out the [Contributing Guidelines](https://github.com/Advanced-Systems/anonpy/blob/master/CONTRIBUTING.md)
+This Project is licensed under the
+[MIT](https://github.com/Advanced-Systems/anonpy/blob/master/LICENSE)
+license.
+Check out the
+[Contributing Guidelines](https://github.com/Advanced-Systems/anonpy/blob/master/CONTRIBUTING.md)
 to learn more about how you can help this project grow.
-Navigate to the [Discussions](https://github.com/Advanced-Systems/anonpy/discussions)
+Navigate to the
+[Discussions](https://github.com/Advanced-Systems/anonpy/discussions)
 panel to ask questions or make feature requests.

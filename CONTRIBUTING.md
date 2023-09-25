@@ -4,8 +4,10 @@
 
 Please take your time to carefully review the sections of this document that pertain
 to your specific problem. If you have any other questions to which you couldn't find
-and answer here, feel free to use [Discussions / Q&A](https://github.com/Advanced-Systems/anonpy/discussions/categories/q-a)
-to seek more help. You may also want to have a look at the [Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
+and answer here, feel free to use
+[Discussions / Q&A](https://github.com/Advanced-Systems/anonpy/discussions/categories/q-a)
+to seek more help. You may also want to have a look at the
+[Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
 page to learn more about internal development processes.
 
 ## Philosophy
@@ -31,14 +33,16 @@ Please follow the procedure described in the
 [Security Policy](https://github.com/Advanced-Systems/anonpy/blob/master/SECURITY.md)
 for reporting vulnerabilities.
 
-Errors should be submitted on GitHub in [Issues](https://github.com/Advanced-Systems/anonpy/issues).
+Errors should be submitted on GitHub in
+[Issues](https://github.com/Advanced-Systems/anonpy/issues).
 Try to fill out the bug report template to the best of your knowledge.
 Feel free to add additional information that you think could be remotely helpful
 for troubleshooting the issue.
 
 ### Feature Requests
 
-New feature requests should be filled on GitHub in [Discussions / Feature Requests](https://github.com/Advanced-Systems/anonpy/discussions/categories/feature-requests).
+New feature requests should be filled on GitHub in
+[Discussions / Feature Requests](https://github.com/Advanced-Systems/anonpy/discussions/categories/feature-requests).
 Note that it is is not paramount to write a detailed story about the requested
 feature in question, but rather to create an incentive for the community to come
 together to iron out the specifics.
@@ -55,7 +59,8 @@ an issue by the Repository owner ([`@StefanGreve`](https://github.com/StefanGrev
 
 ## Branching Policy
 
-This project uses the [GitHub Flow](https://guides.github.com/introduction/flow/index.html),
+This project uses the
+[GitHub Flow](https://guides.github.com/introduction/flow/index.html),
 i.e. all changes happen through Pull Requests (PRs). Because all PRs should target
 the `master` branch, the threshold of acceptance is fairly high.
 
@@ -87,7 +92,9 @@ for this are, i.a.
 - Remove
 
 Good to know: you can attribute co-authors in your commit messages. Learn more about
-how to do it [here](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors). You can also add your GitHub username
+how to do it
+[here](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors).
+You can also add your GitHub username
 to the `__credits__` field in `metadata.py` if your contribution involved changes
 in code.
 
