@@ -41,6 +41,31 @@ class AnonPy(RequestHandler, LogHandler):
             proxies: Dict=RequestHandler._proxies,
             encoding: str="utf-8"
         ) -> None:
+        """
+        Establish a connection to a REST server by specifying an `Endpoint`.
+
+        Set `enable_logging` to `True` and attach a handler to this logger instance
+        to enable method logging on DEBUG level.
+
+        ### Note
+        To authenticate requests with a `token`, use the `set_credentials` method:
+
+        ### Example
+        ```python
+        from anonpy import Authorization, AnonPy, Endpoint
+
+        api = "https://pixeldrain.com/api/"
+        endpoint = Endpoint(upload="/file", download="file/{}", preview="/file/{}/info")
+
+        # create a authenticated session
+        anon = AnonPy(api, endpoint, token="REDACTED")
+        anon.set_credentials(Authorization.Basic)
+
+        # attach console log handler
+        anon.enable_logging = True
+        anon.logger.add_handler(None)
+        ```
+        """
         super().__init__(
             api=api,
             token=token,
@@ -58,6 +83,9 @@ class AnonPy(RequestHandler, LogHandler):
         self.logger = LogHandler(level=LogLevel.DEBUG)
 
     def upload(self: Self, path: Union[str, Path], progressbar: bool=False) -> Dict:
+        """
+        Upload a file. Set `progressbar` to `True` to enable a terminal progress indicator.
+        """
         path = Path(path)
         file = path.name
         size = os.stat(path).st_size
@@ -81,6 +109,9 @@ class AnonPy(RequestHandler, LogHandler):
                 return response.json()
 
     def preview(self: Self, resource: str) -> Dict:
+        """
+        Retrieve meta data about a `resource` without committing to a download.
+        """
         url = self.endpoint.preview.format(resource)
         response = self._get(url, allow_redirects=True)
         self.logger.debug("Preview: %s", resource, hide=not self.enable_logging)
@@ -92,6 +123,9 @@ class AnonPy(RequestHandler, LogHandler):
             path: Union[str, Path]=Path.cwd(),
             progressbar: bool=False
         ) -> Dict:
+        """
+        Download a file. Set `progressbar` to `True` to enable a terminal progress indicator.
+        """
         MB = 1_048_576
         preview = self.preview(resource)
         url = self.endpoint.download.format(resource)
