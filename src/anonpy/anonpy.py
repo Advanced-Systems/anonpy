@@ -11,7 +11,7 @@ from .endpoint import Endpoint
 from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, _progressbar_options
 
 
-class AnonPy(RequestHandler, LogHandler):
+class AnonPy(RequestHandler):
     __slots__ = [
         "api",
         "token",

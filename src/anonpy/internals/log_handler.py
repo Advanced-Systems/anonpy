@@ -81,6 +81,7 @@ class LogHandler:
                 console = StreamHandler(sys.stdout)
                 self.formatter = Formatter(default_layout or layout)
                 console.setFormatter(self.formatter)
+                self.handlers["console"] = console
                 self.__logger.addHandler(console)
                 return self
             case _:

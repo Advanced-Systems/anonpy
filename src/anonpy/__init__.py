@@ -11,3 +11,13 @@ See https://github.com/advanced-systems/anonpy/ for documentation.
 
 from .anonpy import AnonPy
 from .endpoint import Endpoint
+import sys
+
+import sys
+
+python_major, python_minor = (3,11)
+
+try:
+    assert sys.version_info >= (python_major, python_minor)
+except AssertionError:
+    raise RuntimeError(f"{__package__!r} requires Python {python_major}.{python_minor}+ (You have Python {sys.version})")
