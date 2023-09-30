@@ -4,8 +4,10 @@ from pathlib import Path
 from typing import Self, Type
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
+from uuid import uuid4
 
 from anonpy import AnonPy, Endpoint
+from anonpy.internals import LogLevel
 
 from .mocks import MockPixelDrain
 
@@ -26,6 +28,7 @@ class TestAnonPy(TestCase):
 
     @classmethod
     def tearDownClass(cls: Type[Self]) -> None:
+        cls.anon.logger.shutdown()
         del cls.anon
 
     @patch("anonpy.AnonPy.upload")
@@ -59,14 +62,15 @@ class TestAnonPy(TestCase):
     @patch("anonpy.AnonPy.preview")
     def test_preview_with_log_handler(self: Self, mock_preview: MagicMock) -> None:
         # Arrange
-        log_file = "test.json"
+        log_file = f"test_{uuid4()}.json"
         args = {"resource": MockPixelDrain.id}
 
         self.anon.logger \
             .set_base_path(path=Path.home()) \
+            .with_level(LogLevel.DEBUG) \
             .add_handler(log_file)
 
-        mock_preview.side_effect = [self.anon.logger.debug("This shouldn't be logged.", hide=True)]
+        mock_preview.side_effect = [self.anon.logger.info("This shouldn't be logged.", hide=True)]
         mock_preview.return_value = MockPixelDrain.get_preview_response(http_code=200)
 
         log_path = self.anon.logger.path.joinpath(log_file)
@@ -81,13 +85,15 @@ class TestAnonPy(TestCase):
 
         # Act 2
         self.anon.enable_logging = True
-        mock_preview.side_effect = [self.anon.logger.debug("Hello, %s!", "World")]
+        mock_preview.side_effect = [self.anon.logger.info("Hello, %s!", "World")]
+        self.anon.logger.debug("Announce my loyalty to the emperor!")
         mock_preview(**args)
         log_book = self.anon.logger.get_log_history(log_file)
         # Assert 2
         expected = 2
         self.assertEqual(expected, mock_preview.call_count)
         self.assertTrue(len(log_book), msg="Expected log records in log book because is enabled")
+        self.assertEqual(1, len(list(filter(lambda b: b.get("level") == LogLevel.DEBUG.name, log_book))), msg="Expected only 1 logged message on level INFO")
 
         # Act 3
         self.anon.logger.unlink(log_file)

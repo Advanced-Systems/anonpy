@@ -3,6 +3,7 @@
 from pathlib import Path
 from typing import Self, Type
 from unittest import TestCase
+from uuid import uuid4
 
 from anonpy.internals import LogHandler, LogLevel
 
@@ -19,13 +20,14 @@ class TestLogHandler(TestCase):
     @classmethod
     def setUpClass(cls: Type[Self]) -> None:
         cls.logger = LogHandler(path=Path.home(), level=LogLevel.DEBUG)
-        cls.text_log = "text_log.log"
-        cls.csv_log = "csv_log.csv"
-        cls.json_log = "json_log.json"
+        cls.text_log = f"text_log_{uuid4()}.log"
+        cls.csv_log = f"csv_log_{uuid4()}.csv"
+        cls.json_log = f"json_log_{uuid4()}.json"
 
     @classmethod
     def tearDownClass(cls: Type[Self]) -> None:
         cls.logger.shutdown()
+        del cls.logger
 
     def test_text_formatter(self: Self) -> None:
         # Arrange
@@ -33,7 +35,7 @@ class TestLogHandler(TestCase):
         self.logger.add_handler(self.text_log)
 
         # Act
-        self.logger.debug("Hello, %s", *args)
+        self.logger.info("Hello, %s!", *args)
         log_book = self.logger.get_log_history(self.text_log)
         record = log_book.pop()
 
@@ -48,7 +50,7 @@ class TestLogHandler(TestCase):
         self.logger.add_handler(self.csv_log)
 
         # Act
-        self.logger.debug("Hello, %s", *args)
+        self.logger.info("Hello, %s!", *args)
         log_book = self.logger.get_log_history(self.csv_log)
         record = log_book[0]
 
@@ -64,7 +66,7 @@ class TestLogHandler(TestCase):
         self.logger.add_handler(self.json_log, layout=layout)
 
         # Act
-        self.logger.debug("Hello, %s", *args)
+        self.logger.info("Hello, %s!", *args)
         log_book = self.logger.get_log_history(self.json_log)
         record = log_book.pop()
 
