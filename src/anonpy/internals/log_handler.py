@@ -14,6 +14,18 @@ from .json_formatter import JsonFormatter
 
 @unique
 class LogLevel(Enum):
+    """
+    ### LogLevel
+    The first log level is the initial default setting when a new logger instance
+    is created. There are six log levels, sorted by assessed importance.
+
+    1. `NOTSET`: default log level on instantiation
+    2. `DEBUG`: detailed status information for debugging purposes
+    3. `INFO`: information for system maintenance
+    4. `WARNING`: requires attention
+    5. `ERROR`: requires action
+    6. `CRITICAL`: requires immediate action
+    """
     NOTSET = 0
     DEBUG = 10
     INFO = 20
@@ -24,14 +36,15 @@ class LogLevel(Enum):
 class LogHandler:
     def __init__(
             self: Self,
-            level: LogLevel,
+            level: Optional[LogLevel]=None,
             path: Optional[Union[str, Path]]=None,
             encoding: str="utf-8"
         ) -> None:
         """
-        Instantiate a new logger object.
+        Instantiate a new logger object. The `level` determines the minimum
+        priority level of messages to log.
         """
-        self.level = level
+        self.level = level or LogLevel.NOTSET
         self.path = Path(path) if path is not None else None
         self.encoding = encoding
         self.formatter: Union[Formatter, JsonFormatter, CsvFormatter] = None
@@ -46,6 +59,13 @@ class LogHandler:
         Set the log file's base path.
         """
         self.path = Path(path)
+        return self
+
+    def with_level(self: Self, level: LogLevel) -> Self:
+        """
+        Set the log level.
+        """
+        self.__logger.setLevel(level.value)
         return self
 
     def add_handler(
@@ -186,7 +206,7 @@ class LogHandler:
         if hide: return
         if not self.handlers: raise TypeError("Logger configured incorrectly: no handler attached this object")
 
-        self.__logger.log(level.value, message, *args)
+        self.__logger.log(level.value, message, *args, stacklevel=3)
 
     def debug(self: Self, message: str, *args: object, hide: bool=False) -> None:
         """
