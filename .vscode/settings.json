@@ -14,9 +14,12 @@
         "anonfile",
         "anonfiles",
         "anonpy",
+        "endregion",
         "forcelist",
+        "getproxies",
         "Greve",
         "kanban",
+        "levelname",
         "pipx",
         "tqdm"
     ]

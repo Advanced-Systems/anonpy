@@ -8,6 +8,22 @@ from ..internals import Authorization, RequestHandler
 
 
 class PixelDrain(AnonPy):
+    __slots__ = [
+        "api",
+        "token",
+        "credentials",
+        "endpoint",
+        "enable_logging",
+        "logger",
+        "timeout",
+        "total",
+        "status_forcelist",
+        "backoff_factor",
+        "user_agent",
+        "proxies",
+        "encoding"
+    ]
+
     def __init__(
             self: Self,
             user_agent: str,
