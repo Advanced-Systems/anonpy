@@ -15,6 +15,7 @@ class AnonPy(RequestHandler):
     __slots__ = [
         "api",
         "token",
+        "credentials",
         "endpoint",
         "enable_logging",
         "logger",
