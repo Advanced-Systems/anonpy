@@ -11,10 +11,11 @@ from .endpoint import Endpoint
 from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, _progressbar_options
 
 
-class AnonPy(RequestHandler, LogHandler):
+class AnonPy(RequestHandler):
     __slots__ = [
         "api",
         "token",
+        "credentials",
         "endpoint",
         "enable_logging",
         "logger",
@@ -80,7 +81,7 @@ class AnonPy(RequestHandler, LogHandler):
 
         self.endpoint = endpoint
         self.enable_logging = enable_logging
-        self.logger = LogHandler(level=LogLevel.DEBUG)
+        self.logger = LogHandler(level=LogLevel.INFO)
 
     def upload(self: Self, path: Union[str, Path], progressbar: bool=False) -> Dict:
         """
@@ -105,7 +106,7 @@ class AnonPy(RequestHandler, LogHandler):
                     files={"file": CallbackIOWrapper(tqdm_handler.update, file_handler, "read")}
                 )
 
-                self.logger.debug("Download: %s", file, hide=not self.enable_logging)
+                self.logger.info("Download: %s", file, hide=not self.enable_logging)
                 return response.json()
 
     def preview(self: Self, resource: str) -> Dict:
@@ -114,7 +115,7 @@ class AnonPy(RequestHandler, LogHandler):
         """
         url = self.endpoint.preview.format(resource)
         response = self._get(url, allow_redirects=True)
-        self.logger.debug("Preview: %s", resource, hide=not self.enable_logging)
+        self.logger.info("Preview: %s", resource, hide=not self.enable_logging)
         return response.json()
 
     def download(
@@ -144,5 +145,5 @@ class AnonPy(RequestHandler, LogHandler):
                         tqdm_handler.update(len(chunk))
                         file_handler.write(chunk)
 
-        self.logger.debug("Upload: %s", url, hide=not self.enable_logging)
+        self.logger.info("Upload: %s", url, hide=not self.enable_logging)
         return preview

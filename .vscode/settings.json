@@ -20,6 +20,7 @@
         "getproxies",
         "Greve",
         "kanban",
+        "levelname",
         "pipx",
         "tqdm",
         "urandom"
