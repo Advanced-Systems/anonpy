@@ -30,8 +30,8 @@ def upload(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
         anon.upload(file, progressbar=verbose)
 
         if not verbose: continue
-        md5 = Checksum.compute(file, MD5)
-        print(f"md5\t{Checksum.hash2string(md5)}")
+        md5 = Checksum.compute(path=file, algorithm=MD5)
+        print(f"MD5={Checksum.hash2string(md5)}")
 
 def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
     download_directory = Path(getattr(args, "path", config.get_option("client", "download_directory")))
@@ -43,8 +43,9 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
         file = preview.get("name")
 
         if file is None:
-            anon.logger.error("Resource responded with %s" % str(preview))
-            raise ValueError("Unable to read file name property from preview response")
+            print("Aborting download: unable to read file name property from preview response", file=sys.stderr)
+            anon.logger.error("Download Error: resource responded with %s" % str(preview))
+            continue
 
         if check and download_directory.joinpath(file).exists():
             print(f"WARNING: The file {str(file)!r} already exists in {str(download_directory)!r}.")
@@ -54,9 +55,8 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
         anon.download(resource, download_directory, progressbar=verbose)
 
         if not verbose: continue
-        md5 = Checksum.compute(file, MD5)
-        print(f"file\t{file}")
-        print(f"md5\t{Checksum.hash2string(md5)}")
+        md5 = Checksum.compute(path=file, algorithm=MD5)
+        print(f"MD5={Checksum.hash2string(md5)}")
 
 #endregion
 
@@ -130,6 +130,7 @@ def main() -> None:
     except HTTPError as http_error:
         print(http_error.response.text, file=sys.stderr)
     except Exception as exception:
+        print(exception.with_traceback())
         print(exception, file=sys.stderr)
     except:
         print("\n".join([
