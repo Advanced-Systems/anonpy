@@ -76,7 +76,7 @@ class Checksum:
             digest.update(data.encode(encoding))
             return digest.finalize()
 
-        with open(path, mode="rb", encoding=encoding) as file_handler:
+        with open(path, mode="rb") as file_handler:
             bytes_ = file_handler.read()
             digest.update(bytes_)
 
