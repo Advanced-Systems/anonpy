@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import ast
 from configparser import ConfigParser
 from pathlib import Path
 from types import TracebackType
@@ -83,9 +84,20 @@ class ConfigHandler:
 
     def get_option(self: Self, section: str, option: str) -> Any:
         """
-        Get an option value for a given section.
+        Get an option value for a given section. This method will attempt to deduce
+        a Python literal structures and returns a `str` on failing to do so.
+
+        ### Python Literal Structures
+        - `bytes`, `int`, `float`, `complex`
+        - `Tuple`, `List`, `Dict`, `Set`
+        - `bool`, `None`
         """
-        return self.__config.get(section, option)
+        value = self.__config.get(section, option)
+
+        try:
+            return ast.literal_eval(value)
+        except ValueError:
+            return value
 
     def remove_option(self: Self, section: str, option: str) -> bool:
         """
