@@ -62,7 +62,7 @@ class ConfigHandler:
         if settings is None:
             self.__config.add_section(section)
         else:
-            self.__config[section] = settings
+            self.__config[section] = {k: str(v) for k,v in settings.items()}
 
     def remove_section(self: Self, section: str) -> bool:
         """

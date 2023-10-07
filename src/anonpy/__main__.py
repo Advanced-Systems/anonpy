@@ -71,7 +71,7 @@ def _start(module_folder: Path, cfg_file: str) -> ArgumentParser:
     if not cfg_path.exists():
         with ConfigHandler(cfg_path) as config_handler:
             config_handler.add_section("client", settings={
-                "download_directory": str(Path("~/downloads").expanduser()),
+                "download_directory": Path("~/downloads").expanduser(),
                 "token": None,
                 "user_agent": None,
                 "proxies": None,
