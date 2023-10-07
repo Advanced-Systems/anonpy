@@ -16,21 +16,25 @@ from .security import MD5, Checksum
 
 #region commands
 
-def preview(anon: AnonPy, args: Namespace) -> None:
+def preview(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
+    verbose = args.verbose or config.get_option("client", "verbose")
+
     for resource in args.resource:
         preview = anon.preview(resource)
-        print(json.dumps(preview, indent=4) if args.verbose else ",".join(preview.values()))
+        print(json.dumps(preview, indent=4) if verbose else ",".join(preview.values()))
 
-def upload(anon: AnonPy, args: Namespace) -> None:
+def upload(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
+    verbose = args.verbose or config.get_option("client", "verbose")
+
     for file in args.file:
-        anon.upload(file, progressbar=args.verbose)
+        anon.upload(file, progressbar=verbose)
 
-        if not args.verbose: continue
+        if not verbose: continue
         md5 = Checksum.compute(file, MD5)
         print(f"md5\t{Checksum.hash2string(md5)}")
 
 def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
-    download_directory = getattr(args, "path", Path(config.get_option("client", "download_directory")))
+    download_directory = Path(getattr(args, "path", config.get_option("client", "download_directory")))
     verbose = args.verbose or config.get_option("client", "verbose")
     check = args.check or config.get_option("client", "check")
 
@@ -111,9 +115,9 @@ def main() -> None:
     try:
         match args.command:
             case "preview":
-                preview(provider, args)
+                preview(provider, args, config)
             case "upload":
-                upload(provider, args)
+                upload(provider, args, config)
             case "download":
                 download(provider, args, config)
             case _:
