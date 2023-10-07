@@ -2,7 +2,7 @@
 
 import json
 import sys
-from argparse import Namespace
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from colorama import Fore, Style, deinit, just_fix_windows_console
@@ -10,9 +10,9 @@ from requests.exceptions import HTTPError
 
 from .anonpy import AnonPy
 from .cli import build_parser
-from .internals import ConfigHandler, RequestHandler, __credits__, __package__, __version__, get_resource_path, read_file, str2bool
+from .internals import ConfigHandler, LogLevel, RequestHandler, __credits__, __package__, __version__, get_resource_path, read_file, str2bool
 from .providers import PixelDrain
-from .security import Checksum, MD5
+from .security import MD5, Checksum
 
 #region commands
 
@@ -29,56 +29,93 @@ def upload(anon: AnonPy, args: Namespace) -> None:
         md5 = Checksum.compute(file, MD5)
         print(f"md5\t{Checksum.hash2string(md5)}")
 
-def download(anon: AnonPy, args: Namespace) -> None:
+def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
+    download_directory = getattr(args, "path", Path(config.get_option("client", "download_directory")))
+    verbose = args.verbose or config.get_option("client", "verbose")
+    check = args.check or config.get_option("client", "check")
+
     for resource in (args.resource or read_file(args.batch_file)):
         preview = anon.preview(resource)
         file = preview.get("name")
 
-        if args.check and file is not None and Path(file).exists():
-            print(f"Warning: A file with the same name already exists in {str(args.path)!r}.")
+        if file is None:
+            anon.logger.error("Resource responded with %s" % str(preview))
+            raise ValueError("Unable to read file name property from preview response")
+
+        if check and download_directory.joinpath(file).exists():
+            print(f"WARNING: The file {str(file)!r} already exists in {str(download_directory)!r}.")
             prompt = input("Proceed with download? [Y/n] ")
             if not str2bool(prompt): continue
 
-        anon.download(resource, args.path, progressbar=args.verbose)
+        anon.download(resource, download_directory, progressbar=verbose)
 
-        if not args.verbose: continue
+        if not verbose: continue
         md5 = Checksum.compute(file, MD5)
         print(f"file\t{file}")
         print(f"md5\t{Checksum.hash2string(md5)}")
 
 #endregion
 
-def main() -> None:
-    # enable Windows' built-in ANSI support
+def _start(module_folder: Path, cfg_file: str) -> ArgumentParser:
+    # Enable Windows' built-in ANSI support
     just_fix_windows_console()
 
+    # build parser
     description = f"{Fore.WHITE}{Style.DIM}Command line interface for anonymous file sharing.{Style.RESET_ALL}"
     epilog = f"{Fore.WHITE}{Style.DIM}Authors: {','.join(__credits__)}{Style.RESET_ALL}"
-
     parser = build_parser(__package__, __version__, description, epilog)
+
+    # Initialize default settings
+    cfg_path = module_folder.joinpath(cfg_file)
+
+    if not cfg_path.exists():
+        with ConfigHandler(cfg_path) as config_handler:
+            config_handler.add_section("client", settings={
+                "download_directory": str(Path("~/downloads").expanduser()),
+                "token": None,
+                "user_agent": None,
+                "proxies": None,
+                "enable_logging": False,
+                "log_level": LogLevel.INFO.value,
+                "verbose": True,
+                "check": True,
+            })
+
+    return parser
+
+def main() -> None:
+    module_folder = get_resource_path(__package__)
+    cfg_file = "anonpy.ini"
+    log_file = "anonpy.log"
+
+    parser = _start(module_folder, cfg_file)
     args = parser.parse_args()
 
+    config = ConfigHandler(module_folder.joinpath(cfg_file))
+    config.read()
+
     kwargs = {
-        "user_agent": RequestHandler.build_user_agent(__package__, __version__),
-        "enable_logging": args.logging,
+        "token": getattr(args, "token", config.get_option("client", "token")),
+        "proxies": getattr(args, "proxies", config.get_option("client", "proxies")),
+        "user_agent": getattr(args, "user_agent", config.get_option("client", "user_agent")) or RequestHandler.build_user_agent(__package__, __version__),
+        "enable_logging": args.logging or config.get_option("client", "enable_logging"),
     }
 
-    try:
-        log_file = "cli.log"
-        module_folder = get_resource_path(__package__)
-        # NOTE: Uses the PixelDrain provider by default for now
-        provider = PixelDrain(**kwargs)
-        provider.logger \
-            .set_base_path(module_folder) \
-            .add_handler(log_file)
+    # NOTE: Uses the PixelDrain provider by default for now
+    provider = PixelDrain(**kwargs)
+    provider.logger \
+        .set_base_path(module_folder) \
+        .with_level(LogLevel(config.get_option("client", "log_level"))) \
+        .add_handler(log_file)
 
+    try:
         match args.command:
             case "preview":
                 preview(provider, args)
             case "upload":
                 upload(provider, args)
             case "download":
-                download(provider, args)
+                download(provider, args, config)
             case _:
                 raise NotImplementedError()
 
