@@ -14,6 +14,7 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
     parser.add_argument("-t", "--token", type=str, default=SUPPRESS, help="set API token")
     parser.add_argument("-u", "--user-agent", type=str, default=SUPPRESS, help="set custom user-agent")
     parser.add_argument("-p", "--proxies", type=str, default=SUPPRESS, help="set HTTP/HTTPS proxies")
+    parser.add_argument("-c", "--config", type=Path, default=SUPPRESS, help="path to config file")
 
     subparser = parser.add_subparsers(dest="command")
     upload_parser = subparser.add_parser("upload", help="upload a file")

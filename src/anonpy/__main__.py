@@ -91,7 +91,7 @@ def main() -> None:
     parser = _start(module_folder, cfg_file)
     args = parser.parse_args()
 
-    config = ConfigHandler(module_folder.joinpath(cfg_file))
+    config = ConfigHandler(getattr(args, "config", module_folder.joinpath(cfg_file)))
     config.read()
 
     kwargs = {
