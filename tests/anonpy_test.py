@@ -70,7 +70,7 @@ class TestAnonPy(TestCase):
             .with_level(LogLevel.DEBUG) \
             .add_handler(log_file)
 
-        mock_preview.side_effect = [self.anon.logger.info("This shouldn't be logged.", hide=True)]
+        mock_preview.side_effect = [self.anon.logger.info("This shouldn't be logged.", hide=True, stacklevel=3)]
         mock_preview.return_value = MockPixelDrain.get_preview_response(http_code=200)
 
         log_path = self.anon.logger.path.joinpath(log_file)
@@ -85,7 +85,7 @@ class TestAnonPy(TestCase):
 
         # Act 2
         self.anon.enable_logging = True
-        mock_preview.side_effect = [self.anon.logger.info("Hello, %s!", "World")]
+        mock_preview.side_effect = [self.anon.logger.info("Hello, %s!", "World", stacklevel=3)]
         self.anon.logger.debug("Announce my loyalty to the emperor!")
         mock_preview(**args)
         log_book = self.anon.logger.get_log_history(log_file)

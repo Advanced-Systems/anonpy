@@ -35,7 +35,7 @@ class TestLogHandler(TestCase):
         self.logger.add_handler(self.text_log)
 
         # Act
-        self.logger.info("Hello, %s!", *args)
+        self.logger.info("Hello, %s!", *args, stacklevel=3)
         log_book = self.logger.get_log_history(self.text_log)
         record = log_book.pop()
 
@@ -50,7 +50,7 @@ class TestLogHandler(TestCase):
         self.logger.add_handler(self.csv_log)
 
         # Act
-        self.logger.info("Hello, %s!", *args)
+        self.logger.info("Hello, %s!", *args, stacklevel=3)
         log_book = self.logger.get_log_history(self.csv_log)
         record = log_book[0]
 
@@ -66,7 +66,7 @@ class TestLogHandler(TestCase):
         self.logger.add_handler(self.json_log, layout=layout)
 
         # Act
-        self.logger.info("Hello, %s!", *args)
+        self.logger.info("Hello, %s!", *args, stacklevel=3)
         log_book = self.logger.get_log_history(self.json_log)
         record = log_book.pop()
 
