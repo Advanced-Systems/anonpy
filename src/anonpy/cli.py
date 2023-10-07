@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, SUPPRESS
 from pathlib import Path
 
 def build_parser(package_name: str, version: str, description: str, epilog: str) -> ArgumentParser:
@@ -10,11 +10,10 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
 
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {version}")
     parser.add_argument('-V', '--verbose', default=True, action='store_true', help="increase output verbosity")
-    parser.add_argument('--no-verbose', dest='verbose', action='store_false', help="run commands silently")
     parser.add_argument("-l", "--logging", default=False, action="store_true", help="log request history")
-    parser.add_argument("-t", "--token", type=str, default="secret", help="set API token")
-    parser.add_argument("-u", "--user-agent", type=str, default=None, help="set custom user-agent")
-    parser.add_argument("-p", "--proxies", type=str, default=None, help="set HTTP/HTTPS proxies")
+    parser.add_argument("-t", "--token", type=str, default=SUPPRESS, help="set API token")
+    parser.add_argument("-u", "--user-agent", type=str, default=SUPPRESS, help="set custom user-agent")
+    parser.add_argument("-p", "--proxies", type=str, default=SUPPRESS, help="set HTTP/HTTPS proxies")
 
     subparser = parser.add_subparsers(dest="command")
     upload_parser = subparser.add_parser("upload", help="upload a file")
@@ -27,8 +26,7 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
     download_urls_group = download_parser.add_mutually_exclusive_group(required=True)
     download_urls_group.add_argument("-r", "--resource", nargs="*", type=str, help="one or more resources to download")
     download_urls_group.add_argument("-f", "--batch-file", type=Path, nargs="?", help="file containing resources to download")
-    download_parser.add_argument("-p", "--path", type=Path, default=Path.cwd(), help="download directory (CWD by default)")
-    download_parser.add_argument("-c", "--check", default=True, action="store_true", help="check for duplicates (default)")
-    download_parser.add_argument("--no-check", dest="check", action="store_false", help="disable checking for duplicates")
+    download_parser.add_argument("-p", "--path", type=Path, default=SUPPRESS, help="download directory (CWD by default)")
+    download_parser.add_argument("-c", "--check", default=False, action="store_true", help="check for duplicates")
 
     return parser
