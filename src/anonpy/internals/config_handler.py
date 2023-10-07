@@ -96,7 +96,7 @@ class ConfigHandler:
 
         try:
             return ast.literal_eval(value)
-        except ValueError:
+        except (SyntaxError, ValueError):
             return value
 
     def remove_option(self: Self, section: str, option: str) -> bool:
