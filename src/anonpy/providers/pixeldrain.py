@@ -35,12 +35,12 @@ class PixelDrain(AnonPy):
             backoff_factor: int=RequestHandler._backoff_factor,
             proxies: Dict=RequestHandler._proxies
         ) -> None:
-        self._api = "https://pixeldrain.com/api/"
-        self._endpoint = Endpoint(upload="/file", download="file/{}", preview="/file/{}/info")
+        api = "https://pixeldrain.com/api/"
+        endpoint = Endpoint(upload="/file", download="file/{}", preview="/file/{}/info")
 
         super().__init__(
-            self._api,
-            endpoint=self._endpoint,
+            api=api,
+            endpoint=endpoint,
             token=token,
             enable_logging=enable_logging,
             timeout=timeout,
