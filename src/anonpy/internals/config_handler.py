@@ -11,11 +11,11 @@ from ..internals.utils import convert
 class ConfigHandler:
     def __init__(
             self: Self,
-            path: Union[str, Path],
+            path: Optional[Union[str, Path]]=None,
             defaults: Dict=None,
             encoding: str="utf-8",
         ) -> None:
-        self.path = Path(path)
+        self.path = Path(path) if path is not None else None
         self.encoding = encoding
         self.__config = ConfigParser(defaults=defaults)
         self__file_obj = None
@@ -85,9 +85,15 @@ class ConfigHandler:
 
     def get_option(self: Self, section: str, option: str) -> Optional[Any]:
         """
-        Get an option value for a given section.
+        Get the value of an option for a given section.
         """
         return convert(self.__config.get(section, option))
+
+    def set_option(self: Self, section: str, option: str, value: Optional[Any]) -> None:
+        """
+        Set the value of an option for a given section.
+        """
+        self.__config.set(section, option, str(value))
 
     def remove_option(self: Self, section: str, option: str) -> bool:
         """
