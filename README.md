@@ -30,18 +30,22 @@
 
 ## About
 
-The `anonpy` module provides the facilities for rapid application development in
-the realm of anonymous file sharing. It implements an extensible provider-independent
-class system for communicating with any REST API, and also comes with an intuitive
-CLI or lightweight GUI for direct client usage.
+The `anonpy` module makes it easier to communicate with REST APIs for anonymously
+uploading and downloading files. It implements an extensible provider-independent
+class system and also comes with an intuitive CLI or lightweight GUI for interactive
+usage.
 
 > ⚠ This project is still a work in progress. Keep an eye on the
 > [Roadmap](https://github.com/Advanced-Systems/anonpy/milestone/1),
 > which documents the progress path toward the first major release.
 
+Documentation for this project can be found on the GitHub
+[Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
+pages.
+
 ## Installation
 
-> ⚠ It is currently not possible to install this library with `pip`.
+> ⚠ It is currently not possible to install this library with `pip` yet.
 
 This library can be installed with:
 
@@ -58,7 +62,7 @@ pipx install anonpy
 
 ## Library
 
-You can use `AnonPy` to interface with a wide variety of REST services by
+AnonPy can be used to interface with a wide variety of REST services by
 building a contract with the `Endpoint` class.
 
 ```python
@@ -81,9 +85,6 @@ print(f"{download=}")
 upload = anon.upload("homework.docx", progressbar=True)
 print(f"{upload=}")
 ```
-
-You can also use the [Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
-page for more in-depth examples or to read more about intrinsic development details.
 
 ## Command Line Interface
 
@@ -114,13 +115,18 @@ uses the anonfiles logo as a small nod to its past.
 Special thanks to [@aaronlyy](https://github.com/aaronlyy) for passing on the
 PyPI name [`anonpy`](https://pypi.org/project/anonpy/) to [@StefanGreve](https://github.com/aaronlyy).
 
-See also the list of [contributors](https://github.com/Advanced-Systems/anonpy/contributors)
+See also the list of
+[contributors](https://github.com/Advanced-Systems/anonpy/contributors)
 who participated in the development of this project.
 
 ## Further Reading
 
-This Project is licensed under the [MIT](https://github.com/Advanced-Systems/anonpy/blob/master/LICENSE) license.
-Check out the [Contributing Guidelines](https://github.com/Advanced-Systems/anonpy/blob/master/CONTRIBUTING.md)
+This Project is licensed under the
+[MIT](https://github.com/Advanced-Systems/anonpy/blob/master/LICENSE)
+license.
+Check out the
+[Contributing Guidelines](https://github.com/Advanced-Systems/anonpy/blob/master/CONTRIBUTING.md)
 to learn more about how you can help this project grow.
-Navigate to the [Discussions](https://github.com/Advanced-Systems/anonpy/discussions)
+Navigate to the
+[Discussions](https://github.com/Advanced-Systems/anonpy/discussions)
 panel to ask questions or make feature requests.

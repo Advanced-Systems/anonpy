@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+- name: Feature Request
+  url: https://github.com/Advanced-Systems/anonpy/discussions/1
+  about: Learn how to create a feature request on GitHub Discussions
+- name: Questions
+  url: https://github.com/Advanced-Systems/anonpy/discussions/categories/q-a
+  about: Ask questions or look for answers to frequently asked questions

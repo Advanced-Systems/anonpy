@@ -14,6 +14,18 @@ from .json_formatter import JsonFormatter
 
 @unique
 class LogLevel(Enum):
+    """
+    ### LogLevel
+    The first log level is the initial default setting when a new logger instance
+    is created. There are six log levels, sorted by assessed importance.
+
+    1. `NOTSET`: default log level on instantiation
+    2. `DEBUG`: detailed status information for debugging purposes
+    3. `INFO`: information for system maintenance
+    4. `WARNING`: requires attention
+    5. `ERROR`: requires action
+    6. `CRITICAL`: requires immediate action
+    """
     NOTSET = 0
     DEBUG = 10
     INFO = 20
@@ -24,14 +36,15 @@ class LogLevel(Enum):
 class LogHandler:
     def __init__(
             self: Self,
-            level: LogLevel,
+            level: Optional[LogLevel]=None,
             path: Optional[Union[str, Path]]=None,
             encoding: str="utf-8"
         ) -> None:
         """
-        Instantiate a new logger object.
+        Instantiate a new logger object. The `level` determines the minimum
+        priority level of messages to log.
         """
-        self.level = level
+        self.level = level or LogLevel.NOTSET
         self.path = Path(path) if path is not None else None
         self.encoding = encoding
         self.formatter: Union[Formatter, JsonFormatter, CsvFormatter] = None
@@ -48,6 +61,13 @@ class LogHandler:
         self.path = Path(path)
         return self
 
+    def with_level(self: Self, level: LogLevel) -> Self:
+        """
+        Set the log level.
+        """
+        self.__logger.setLevel(level.value)
+        return self
+
     def add_handler(
             self: Self,
             name: Optional[Union[str, Path]]=None,
@@ -60,12 +80,11 @@ class LogHandler:
         Note that plain log files or console logs should define the layout as a `str`.
         """
         target = Path(name).suffix if name is not None else "console"
-        default_layout = "%(asctime)s [%(levelname)s] %(name)s - %(message)s"
+        default_layout = "%(asctime)s [%(levelname)s] %(pathname)s@%(lineno)d - %(message)s"
         default_structured_layout = {
             "timestamp": "asctime",
             "level": "levelname",
-            "name": "name",
-            "file": "filename",
+            "file": "pathname",
             "line": "lineno",
             "message": "message"
         }
@@ -81,6 +100,7 @@ class LogHandler:
                 console = StreamHandler(sys.stdout)
                 self.formatter = Formatter(default_layout or layout)
                 console.setFormatter(self.formatter)
+                self.handlers["console"] = console
                 self.__logger.addHandler(console)
                 return self
             case _:
@@ -175,7 +195,8 @@ class LogHandler:
             level: LogLevel,
             message: str,
             *args: object,
-            hide: bool=False
+            hide: bool=False,
+            **kwargs: object
         ) -> None:
         """
         Log `message % args` with severity `level`.
@@ -185,36 +206,40 @@ class LogHandler:
         if hide: return
         if not self.handlers: raise TypeError("Logger configured incorrectly: no handler attached this object")
 
-        self.__logger.log(level.value, message, *args)
+        # Use a stacklevel of 4 to log the calling method from debug, info, etc.
+        if kwargs.get("stacklevel") is None:
+            kwargs["stacklevel"] = 4
 
-    def debug(self: Self, message: str, *args: object, hide: bool=False) -> None:
+        self.__logger.log(level.value, message, *args, **kwargs)
+
+    def debug(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.DEBUG`.
         """
-        self.log(LogLevel.DEBUG, message, *args, hide=hide)
+        self.log(LogLevel.DEBUG, message, *args, hide=hide, **kwargs)
 
-    def info(self: Self, message: str, *args: object, hide: bool=False) -> None:
+    def info(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.INFO`.
         """
-        self.log(LogLevel.INFO, message, *args, hide=hide)
+        self.log(LogLevel.INFO, message, *args, hide=hide, **kwargs)
 
-    def warning(self: Self, message: str, *args: object, hide: bool=False) -> None:
+    def warning(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.WARNING`.
         """
-        self.log(LogLevel.WARNING, message, *args, hide=hide)
+        self.log(LogLevel.WARNING, message, *args, hide=hide, **kwargs)
 
-    def error(self: Self, message: str, *args: object, hide: bool=False) -> None:
+    def error(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.ERROR`.
         """
-        self.log(LogLevel.ERROR, message, *args, hide=hide)
+        self.log(LogLevel.ERROR, message, *args, hide=hide, **kwargs)
 
-    def critical(self: Self, message: str, *args: object, hide: bool=False) -> None:
+    def critical(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.CRITICAL`.
         """
-        self.log(LogLevel.CRITICAL, message, *args, hide=hide)
+        self.log(LogLevel.CRITICAL, message, *args, hide=hide, **kwargs)
 
     #endregion

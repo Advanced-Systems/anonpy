@@ -9,6 +9,7 @@ from .request_handler import RequestHandler
 from .timeout import Timeout
 from .utils import (
     _progressbar_options,
+    convert,
     get_resource_path,
     get_while,
     ignore_warnings,
