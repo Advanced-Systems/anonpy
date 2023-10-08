@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import ast
 from configparser import ConfigParser
 from pathlib import Path
 from types import TracebackType
 from typing import Any, Dict, List, Optional, Self, Type, Union
+
+from ..internals.utils import convert
 
 
 class ConfigHandler:
@@ -82,22 +83,11 @@ class ConfigHandler:
         """
         return self.__config.options(section)
 
-    def get_option(self: Self, section: str, option: str) -> Any:
+    def get_option(self: Self, section: str, option: str) -> Optional[Any]:
         """
-        Get an option value for a given section. This method will attempt to deduce
-        a Python literal structures and returns a `str` on failing to do so.
-
-        ### Python Literal Structures
-        - `bytes`, `int`, `float`, `complex`
-        - `Tuple`, `List`, `Dict`, `Set`
-        - `bool`, `None`
+        Get an option value for a given section.
         """
-        value = self.__config.get(section, option)
-
-        try:
-            return ast.literal_eval(value)
-        except (SyntaxError, ValueError):
-            return value
+        return convert(self.__config.get(section, option))
 
     def remove_option(self: Self, section: str, option: str) -> bool:
         """
@@ -110,10 +100,14 @@ class ConfigHandler:
     #region Properties
 
     @property
-    def json(self: Self) -> Dict[str, Dict[str, str]]:
+    def json(self: Self) -> Dict[str, Dict[str, Optional[Any]]]:
         """
         Convert the content of the INI file to JSON, excluding `[DEFAULT]`.
         """
-        return {section: dict(self.__config[section]) for section in self.__config.sections()}
+        return {
+            section: {
+                option: convert(value) for option, value in self.__config[section].items()
+            } for section in self.__config.sections()
+        }
 
     #endregion
