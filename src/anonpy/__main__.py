@@ -44,7 +44,7 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
 
         if file is None:
             print("Aborting download: unable to read file name property from preview response", file=sys.stderr)
-            anon.logger.error("Download Error: resource responded with %s" % str(preview))
+            anon.logger.error("Download Error: resource %s responded with %s" % (args.resource, str(preview)))
             continue
 
         if check and download_directory.joinpath(file).exists():
@@ -64,7 +64,7 @@ def _start(module_folder: Path, cfg_file: str) -> ArgumentParser:
     # Enable Windows' built-in ANSI support
     just_fix_windows_console()
 
-    # build parser
+    # Configure parser
     description = f"{Fore.WHITE}{Style.DIM}Command line interface for anonymous file sharing.{Style.RESET_ALL}"
     epilog = f"{Fore.WHITE}{Style.DIM}Authors: {','.join(__credits__)}{Style.RESET_ALL}"
     parser = build_parser(__package__, __version__, description, epilog)
