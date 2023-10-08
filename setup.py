@@ -16,7 +16,7 @@ print("processing setup function")
 
 setup(
     name="anonpy",
-    version="0.1.0",
+    version="1.0.0-rc.1",
     license="MIT",
     author="Stefan Greve",
     author_email="greve.stefan@outlook.jp",
