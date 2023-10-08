@@ -14,13 +14,16 @@
         "anonfile",
         "anonfiles",
         "anonpy",
+        "deinit",
         "endregion",
+        "fernet",
         "forcelist",
         "getproxies",
         "Greve",
         "kanban",
         "levelname",
         "pipx",
-        "tqdm"
+        "tqdm",
+        "urandom"
     ]
 }

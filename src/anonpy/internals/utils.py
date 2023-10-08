@@ -1,12 +1,23 @@
 #!/usr/bin/env python3
 
+import ast
 import functools
 import os
 import platform
 import warnings
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, Iterator, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 
+
+def convert(value: str) -> Optional[Any]:
+    """
+    This method will attempt to deduce a Python literal structures and returns a
+    `str` on failing to do so.
+    """
+    try:
+        return ast.literal_eval(value)
+    except (SyntaxError, ValueError):
+        return value
 
 def deprecate(message: str) -> None:
     """

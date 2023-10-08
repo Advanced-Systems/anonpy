@@ -80,12 +80,11 @@ class LogHandler:
         Note that plain log files or console logs should define the layout as a `str`.
         """
         target = Path(name).suffix if name is not None else "console"
-        default_layout = "%(asctime)s [%(levelname)s] %(name)s - %(message)s"
+        default_layout = "%(asctime)s [%(levelname)s] %(pathname)s@%(lineno)d - %(message)s"
         default_structured_layout = {
             "timestamp": "asctime",
             "level": "levelname",
-            "name": "name",
-            "file": "filename",
+            "file": "pathname",
             "line": "lineno",
             "message": "message"
         }
@@ -196,7 +195,8 @@ class LogHandler:
             level: LogLevel,
             message: str,
             *args: object,
-            hide: bool=False
+            hide: bool=False,
+            **kwargs: object
         ) -> None:
         """
         Log `message % args` with severity `level`.
@@ -206,36 +206,40 @@ class LogHandler:
         if hide: return
         if not self.handlers: raise TypeError("Logger configured incorrectly: no handler attached this object")
 
-        self.__logger.log(level.value, message, *args, stacklevel=3)
+        # Use a stacklevel of 4 to log the calling method from debug, info, etc.
+        if kwargs.get("stacklevel") is None:
+            kwargs["stacklevel"] = 4
 
-    def debug(self: Self, message: str, *args: object, hide: bool=False) -> None:
+        self.__logger.log(level.value, message, *args, **kwargs)
+
+    def debug(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.DEBUG`.
         """
-        self.log(LogLevel.DEBUG, message, *args, hide=hide)
+        self.log(LogLevel.DEBUG, message, *args, hide=hide, **kwargs)
 
-    def info(self: Self, message: str, *args: object, hide: bool=False) -> None:
+    def info(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.INFO`.
         """
-        self.log(LogLevel.INFO, message, *args, hide=hide)
+        self.log(LogLevel.INFO, message, *args, hide=hide, **kwargs)
 
-    def warning(self: Self, message: str, *args: object, hide: bool=False) -> None:
+    def warning(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.WARNING`.
         """
-        self.log(LogLevel.WARNING, message, *args, hide=hide)
+        self.log(LogLevel.WARNING, message, *args, hide=hide, **kwargs)
 
-    def error(self: Self, message: str, *args: object, hide: bool=False) -> None:
+    def error(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.ERROR`.
         """
-        self.log(LogLevel.ERROR, message, *args, hide=hide)
+        self.log(LogLevel.ERROR, message, *args, hide=hide, **kwargs)
 
-    def critical(self: Self, message: str, *args: object, hide: bool=False) -> None:
+    def critical(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.CRITICAL`.
         """
-        self.log(LogLevel.CRITICAL, message, *args, hide=hide)
+        self.log(LogLevel.CRITICAL, message, *args, hide=hide, **kwargs)
 
     #endregion

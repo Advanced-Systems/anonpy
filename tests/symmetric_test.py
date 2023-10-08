@@ -20,8 +20,8 @@ class TestSymmetric:
         message = "Hello, World!"
 
         # Act
-        cypher = sym.encrypt(message=message)
-        source = sym.decrypt(cypher=cypher)
+        cipher = sym.encrypt(message=message)
+        source = sym.decrypt(cipher=cipher)
         sym.delete_key()
 
         # Assert
@@ -39,8 +39,8 @@ class TestSymmetric:
             sym.store_key(sym_key)
             sym.delete_key()
             sym.load_key(sym_key)
-            cypher = sym.encrypt(message=message)
-            source = sym.decrypt(cypher=cypher)
+            cipher = sym.encrypt(message=message)
+            source = sym.decrypt(cipher=cipher)
             # Assert
             assert message == source
         except ValueError as error:
