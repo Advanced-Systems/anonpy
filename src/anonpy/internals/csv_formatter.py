@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 from logging import Formatter, LogRecord
-from typing import Dict, Optional, Self
+from typing import Dict, Optional, Self, override
+
 
 class CsvFormatter(Formatter):
     def __init__(
@@ -18,12 +19,14 @@ class CsvFormatter(Formatter):
         self.default_msec_format = msec_format
         self.datefmt = None
 
+    @override
     def usesTime(self) -> bool:
         """
         Check if the format uses the creation time of the record.
         """
         return "asctime" in self.fmt_dict.values()
 
+    @override
     def formatMessage(self, record: LogRecord) -> str:
         """
         Return the specified record as CSV.
@@ -36,7 +39,7 @@ class CsvFormatter(Formatter):
             for fmt_key, fmt_val in self.fmt_dict.items()
         ])
 
-
+    @override
     def format(self: Self, record: LogRecord) -> str:
         """
         Format the specified record as CSV.
