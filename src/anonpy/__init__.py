@@ -15,7 +15,7 @@ from .anonpy import AnonPy
 from .internals.metadata import __package__
 from .endpoint import Endpoint
 
-python_major, python_minor = (3, 11)
+python_major, python_minor = (3, 12)
 
 try:
     assert sys.version_info >= (python_major, python_minor)

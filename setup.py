@@ -16,7 +16,7 @@ print("processing setup function")
 
 setup(
     name="anonpy",
-    version="1.0.0-rc.1",
+    version="1.0.0-rc.2",
     license="MIT",
     author="Stefan Greve",
     author_email="greve.stefan@outlook.jp",
@@ -30,7 +30,7 @@ setup(
         "Source Code": "https://github.com/advanced-systems/anonpy",
         "Bug Reports": "https://github.com/advanced-systems/anonpy/issues"
     },
-    python_requires=">=3.11",
+    python_requires=">=3.12",
     install_requires=read_file("requirements/release.txt", split=True),
     extra_requires={
         "dev": read_file("requirements/development.txt", split=True)[1:]
@@ -46,7 +46,7 @@ setup(
         ]
     },
     classifiers=[
-        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Intended Audience :: Developers",
         "Natural Language :: English",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
