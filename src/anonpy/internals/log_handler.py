@@ -6,7 +6,7 @@ import sys
 from enum import Enum, unique
 from logging import FileHandler, Formatter, StreamHandler, getLogger
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Self, Union
+from typing import Any, Dict, List, Mapping, Optional, Self, TypedDict, Union, Unpack
 
 from .csv_formatter import CsvFormatter
 from .json_formatter import JsonFormatter
@@ -32,6 +32,13 @@ class LogLevel(Enum):
     WARNING = 30
     ERROR = 40
     CRITICAL = 50
+
+
+class LogArgs(TypedDict):
+    exc_info: Optional[BaseException]
+    stack_info: bool
+    stacklevel: int
+    extra: Optional[Mapping[str, object]]
 
 class LogHandler:
     def __init__(
@@ -197,7 +204,7 @@ class LogHandler:
             message: str,
             *args: object,
             hide: bool=False,
-            **kwargs: object
+            **kwargs: Unpack[LogArgs]
         ) -> None:
         """
         Log `message % args` with severity `level`.
@@ -212,31 +219,31 @@ class LogHandler:
 
         self.__logger.log(level.value, message, *args, **kwargs)
 
-    def debug(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
+    def debug(self: Self, message: str, *args: object, hide: bool=False, **kwargs: Unpack[LogArgs]) -> None:
         """
         Log `message % args` with severity `LogLevel.DEBUG`.
         """
         self.__log(LogLevel.DEBUG, message, *args, hide=hide, **kwargs)
 
-    def info(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
+    def info(self: Self, message: str, *args: object, hide: bool=False, **kwargs: Unpack[LogArgs]) -> None:
         """
         Log `message % args` with severity `LogLevel.INFO`.
         """
         self.__log(LogLevel.INFO, message, *args, hide=hide, **kwargs)
 
-    def warning(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
+    def warning(self: Self, message: str, *args: object, hide: bool=False, **kwargs: Unpack[LogArgs]) -> None:
         """
         Log `message % args` with severity `LogLevel.WARNING`.
         """
         self.__log(LogLevel.WARNING, message, *args, hide=hide, **kwargs)
 
-    def error(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
+    def error(self: Self, message: str, *args: object, hide: bool=False, **kwargs: Unpack[LogArgs]) -> None:
         """
         Log `message % args` with severity `LogLevel.ERROR`.
         """
         self.__log(LogLevel.ERROR, message, *args, hide=hide, **kwargs)
 
-    def critical(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
+    def critical(self: Self, message: str, *args: object, hide: bool=False, **kwargs: Unpack[LogArgs]) -> None:
         """
         Log `message % args` with severity `LogLevel.CRITICAL`.
         """
