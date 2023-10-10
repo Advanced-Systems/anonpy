@@ -39,22 +39,29 @@ usage.
 > [Roadmap](https://github.com/Advanced-Systems/anonpy/milestone/1),
 > which documents the progress path toward the first major release.
 
-Documentation for this project can be found on the GitHub
+Documentation for this project is located on the GitHub
 [Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
-pages.
+page.
 
 ## Installation
 
-> ⚠ It is currently not possible to install this library with `pip` yet.
+> ⚠ It is currently not possible to install this library with `pip` yet, but
+> you may install the release candidate for testing purposes.
 
-This library can be installed with:
+`anonpy` is available on PyPI:
 
 ```powershell
 pip install anonpy
 ```
 
-Alternatively, use the [`pipx`](https://pypa.github.io/pipx/) command if you
-intend to use `anonpy` solely from the command line:
+Release candidates (preview versions) of this library can be installed with:
+
+```powershell
+pip install -i https://test.pypi.org/simple/ anonpy
+```
+
+To ensure a clean and isolated environment for running `anonpy`'s CLI, it is
+recommended to install it with the [`pipx`](https://pypa.github.io/pipx/) command.
 
 ```powershell
 pipx install anonpy
@@ -62,7 +69,7 @@ pipx install anonpy
 
 ## Library
 
-AnonPy can be used to interface with a wide variety of REST services by
+`anonpy` can be used to interface with a wide variety of REST services by
 building a contract with the `Endpoint` class.
 
 ```python
@@ -95,6 +102,9 @@ anonpy --help
 ```
 
 ## Graphical User Interface
+
+> ⚠ This feature is currently not implemented yet, but is expected to be released
+> in version 1.2.0
 
 Launch a graphical user interface for uploading and downloading files:
 
