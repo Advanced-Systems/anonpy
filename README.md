@@ -13,13 +13,13 @@
     <a href="https://codecov.io/gh/Advanced-Systems/anonpy" target="_blank" title="Code Coverage">
         <img src="https://codecov.io/gh/Advanced-Systems/anonpy/graph/badge.svg?token=64NLA38DP4">
     </a>
-    <a title="Downloads per Month">
-        <img src="https://img.shields.io/pypi/dm/anonpy">
+    <a href="https://pypistats.org/packages/anonpy" target="_blank" title="Downloads per Month">
+        <img src="https://img.shields.io/pypi/dm/anonpy?label=Downloads">
     </a>
-    <a title="Supported Python Versions">
-        <img src="https://img.shields.io/pypi/pyversions/anonpy">
+    <a href="https://www.python.org/downloads/release/python-3120/" target="_blank" title="Supported Python Version">
+        <img src="https://img.shields.io/pypi/pyversions/anonpy?label=Python">
     </a>
-    <a href="https://github.com/Advanced-Systems/anonpy" title="Release Version">
+    <a href="https://github.com/Advanced-Systems/anonpy" target="_blank" title="Release Version">
         <img src="https://img.shields.io/pypi/v/anonpy?color=blue&label=Release">
     </a>
     <a href="https://github.com/Advanced-Systems/anonpy/blob/master/LICENSE" target="_blank" title="License">
