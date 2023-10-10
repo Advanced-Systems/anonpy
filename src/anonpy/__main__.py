@@ -44,7 +44,7 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
 
         if file is None:
             print("Aborting download: unable to read file name property from preview response", file=sys.stderr)
-            anon.logger.error("Download Error: resource %s responded with %s" % (args.resource, str(preview)))
+            anon.logger.error("Download Error: resource %s responded with %s" % (args.resource, str(preview)), stacklevel=2)
             continue
 
         if check and download_directory.joinpath(file).exists():
@@ -70,7 +70,7 @@ def _start(module_folder: Path, cfg_file: str) -> ArgumentParser:
     parser = build_parser(__package__, __version__, description, epilog)
 
     # Initialize default settings
-    cfg_path = module_folder.joinpath(cfg_file)
+    cfg_path = module_folder / cfg_file
 
     if not cfg_path.exists():
         with ConfigHandler(cfg_path) as config_handler:
@@ -95,7 +95,7 @@ def main() -> None:
     parser = _start(module_folder, cfg_file)
     args = parser.parse_args()
 
-    config = ConfigHandler(getattr(args, "config", module_folder.joinpath(cfg_file)))
+    config = ConfigHandler(getattr(args, "config", module_folder / cfg_file))
     config.read()
 
     kwargs = {
@@ -128,10 +128,11 @@ def main() -> None:
     except NotImplementedError:
         parser.print_help()
     except HTTPError as http_error:
+        provider.logger.error("Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text), stacklevel=2)
         print(http_error.response.text, file=sys.stderr)
     except Exception as exception:
-        print(exception.with_traceback())
-        print(exception, file=sys.stderr)
+        provider.logger.critical(exception, stacklevel=2)
+        print(exception.with_traceback(), file=sys.stderr)
     except:
         print("\n".join([
             "An unhandled exception was thrown. The log file may give you more",

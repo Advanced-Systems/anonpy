@@ -106,7 +106,7 @@ class AnonPy(RequestHandler):
                     files={"file": CallbackIOWrapper(tqdm_handler.update, file_handler, "read")}
                 )
 
-                self.logger.info("Download: %s", file, hide=not self.enable_logging)
+                self.logger.info("Download: %s", file, hide=not self.enable_logging, stacklevel=2)
                 return response.json()
 
     def preview(self: Self, resource: str) -> Dict:
@@ -115,7 +115,7 @@ class AnonPy(RequestHandler):
         """
         url = self.endpoint.preview.format(resource)
         response = self._get(url, allow_redirects=True)
-        self.logger.info("Preview: %s", resource, hide=not self.enable_logging)
+        self.logger.info("Preview: %s", resource, hide=not self.enable_logging, stacklevel=2)
         return response.json()
 
     def download(
@@ -145,5 +145,5 @@ class AnonPy(RequestHandler):
                         tqdm_handler.update(len(chunk))
                         file_handler.write(chunk)
 
-        self.logger.info("Upload: %s", url, hide=not self.enable_logging)
+        self.logger.info("Upload: %s", url, hide=not self.enable_logging, stacklevel=2)
         return preview

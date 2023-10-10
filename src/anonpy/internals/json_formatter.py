@@ -2,7 +2,7 @@
 
 import json
 from logging import Formatter, LogRecord
-from typing import Dict, Optional, Self
+from typing import Dict, Optional, Self, override
 
 
 class JsonFormatter(Formatter):
@@ -19,18 +19,21 @@ class JsonFormatter(Formatter):
         self.default_msec_format = msec_format
         self.datefmt = None
 
+    @override
     def usesTime(self) -> bool:
         """
         Check if the format uses the creation time of the record.
         """
         return "asctime" in self.fmt_dict.values()
 
+    @override
     def formatMessage(self: Self, record: LogRecord) -> Dict:
         """
         Return the specified record as JSON.
         """
         return {fmt_key: record.__dict__[fmt_val] for fmt_key, fmt_val in self.fmt_dict.items()}
 
+    @override
     def format(self: Self, record: LogRecord) -> Dict:
         """
         Format the specified record as JSON.
