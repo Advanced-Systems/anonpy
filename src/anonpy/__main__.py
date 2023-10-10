@@ -128,10 +128,10 @@ def main() -> None:
     except NotImplementedError:
         parser.print_help()
     except HTTPError as http_error:
-        provider.logger.error("Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text))
+        provider.logger.error("Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text), stacklevel=1)
         print(http_error.response.text, file=sys.stderr)
     except Exception as exception:
-        provider.logger.critical(exception)
+        provider.logger.critical(exception, stacklevel=1)
         print(exception.with_traceback(), file=sys.stderr)
     except:
         print("\n".join([

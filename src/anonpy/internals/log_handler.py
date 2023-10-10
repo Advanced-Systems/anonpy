@@ -48,7 +48,8 @@ class LogHandler:
         self.path = Path(path) if path is not None else None
         self.encoding = encoding
         self.formatter: Union[Formatter, JsonFormatter, CsvFormatter] = None
-        # The file name (including extension) is used as a key
+        # The file name (including extension) is used as a key for file logs,
+        # but "console" for stdout
         self.handlers: Dict[str, FileHandler] = {}
 
         self.__logger = getLogger(__name__)
@@ -182,15 +183,15 @@ class LogHandler:
                 handler.flush()
                 handler.close()
             except (OSError, ValueError):
-                # Ignore errors which might be caused because handlers have been
-                # closed but references to them are still around at application exit.
+                # Ignore errors which might be caused by closed handlers that still
+                # have references to them around at application exit
                 pass
             finally:
                 handler.release()
 
     #region log utilities
 
-    def log(
+    def __log(
             self: Self,
             level: LogLevel,
             message: str,
@@ -204,11 +205,10 @@ class LogHandler:
         Raise a `TypeError` exception if the logger is configured incorrectly.
         """
         if hide: return
-        if not self.handlers: raise TypeError("Logger configured incorrectly: no handler attached this object")
+        if not self.handlers: raise TypeError("Logger configured incorrectly: no handler attached to this object")
 
-        # Use a stacklevel of 4 to log the calling method from debug, info, etc.
-        if kwargs.get("stacklevel") is None:
-            kwargs["stacklevel"] = 4
+        # Add an offset to reset the stacklevel at the calling function
+        kwargs["stacklevel"] = kwargs.get("stacklevel", 2) + 2
 
         self.__logger.log(level.value, message, *args, **kwargs)
 
@@ -216,30 +216,30 @@ class LogHandler:
         """
         Log `message % args` with severity `LogLevel.DEBUG`.
         """
-        self.log(LogLevel.DEBUG, message, *args, hide=hide, **kwargs)
+        self.__log(LogLevel.DEBUG, message, *args, hide=hide, **kwargs)
 
     def info(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.INFO`.
         """
-        self.log(LogLevel.INFO, message, *args, hide=hide, **kwargs)
+        self.__log(LogLevel.INFO, message, *args, hide=hide, **kwargs)
 
     def warning(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.WARNING`.
         """
-        self.log(LogLevel.WARNING, message, *args, hide=hide, **kwargs)
+        self.__log(LogLevel.WARNING, message, *args, hide=hide, **kwargs)
 
     def error(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.ERROR`.
         """
-        self.log(LogLevel.ERROR, message, *args, hide=hide, **kwargs)
+        self.__log(LogLevel.ERROR, message, *args, hide=hide, **kwargs)
 
     def critical(self: Self, message: str, *args: object, hide: bool=False, **kwargs: object) -> None:
         """
         Log `message % args` with severity `LogLevel.CRITICAL`.
         """
-        self.log(LogLevel.CRITICAL, message, *args, hide=hide, **kwargs)
+        self.__log(LogLevel.CRITICAL, message, *args, hide=hide, **kwargs)
 
     #endregion
