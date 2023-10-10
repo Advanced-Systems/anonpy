@@ -44,7 +44,7 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
 
         if file is None:
             print("Aborting download: unable to read file name property from preview response", file=sys.stderr)
-            anon.logger.error("Download Error: resource %s responded with %s" % (args.resource, str(preview)))
+            anon.logger.error("Download Error: resource %s responded with %s" % (args.resource, str(preview)), stacklevel=2)
             continue
 
         if check and download_directory.joinpath(file).exists():
@@ -128,10 +128,10 @@ def main() -> None:
     except NotImplementedError:
         parser.print_help()
     except HTTPError as http_error:
-        provider.logger.error("Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text), stacklevel=1)
+        provider.logger.error("Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text), stacklevel=2)
         print(http_error.response.text, file=sys.stderr)
     except Exception as exception:
-        provider.logger.critical(exception, stacklevel=1)
+        provider.logger.critical(exception, stacklevel=2)
         print(exception.with_traceback(), file=sys.stderr)
     except:
         print("\n".join([

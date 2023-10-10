@@ -40,6 +40,7 @@ class LogArgs(TypedDict):
     stacklevel: int
     extra: Optional[Mapping[str, object]]
 
+
 class LogHandler:
     def __init__(
             self: Self,
@@ -215,7 +216,7 @@ class LogHandler:
         if not self.handlers: raise TypeError("Logger configured incorrectly: no handler attached to this object")
 
         # Add an offset to reset the stacklevel at the calling function
-        kwargs["stacklevel"] = kwargs.get("stacklevel", 2) + 2
+        kwargs["stacklevel"] = kwargs.get("stacklevel", 1) + 2
 
         self.__logger.log(level.value, message, *args, **kwargs)
 
