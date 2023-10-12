@@ -112,6 +112,9 @@ def main() -> None:
         .with_level(LogLevel(config.get_option("client", "log_level"))) \
         .add_handler(log_file)
 
+    if args.gui:
+        raise NotImplementedError("This feature is not implemented yet, see also: https://github.com/Advanced-Systems/anonpy/discussions/11")
+
     try:
         match args.command:
             case "preview":
