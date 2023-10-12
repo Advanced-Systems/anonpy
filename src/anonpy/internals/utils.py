@@ -59,7 +59,7 @@ def join_url(url: str, *paths) -> str:
     """
     Join a relative list of paths with a URL.
     """
-    return functools.reduce(lambda u, p: f"{u}/{p}", [url, *paths])
+    return functools.reduce(lambda u, p: f"{u.rstrip("/")}/{p.lstrip("/")}", [url, *paths])
 
 def get_while(dict_: Dict, default: Any, *keys: str) -> Any:
     """
