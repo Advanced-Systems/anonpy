@@ -8,10 +8,9 @@ from pathlib import Path
 from colorama import Fore, Style, deinit, just_fix_windows_console
 from requests.exceptions import HTTPError
 
-from .anonpy import AnonPy
+from .anonpy import AnonPy, Endpoint
 from .cli import build_parser
 from .internals import ConfigHandler, LogLevel, RequestHandler, __credits__, __package__, __version__, get_resource_path, read_file, str2bool
-from .providers import PixelDrain
 from .security import MD5, Checksum
 
 #region commands
@@ -85,6 +84,13 @@ def _start(module_folder: Path, cfg_file: str) -> ArgumentParser:
                 "check": True,
             })
 
+            config_handler.add_section("server", settings={
+                "api": "https://pixeldrain.com/api/",
+                "upload": "/file",
+                "download": "/file{}",
+                "preview": "/file/{}/info"
+            })
+
     return parser
 
 def main() -> None:
@@ -99,14 +105,15 @@ def main() -> None:
     config.read()
 
     kwargs = {
+        "api": config.get_option("server", "api"),
+        "endpoint": Endpoint(config.get_option("server", "upload"), config.get_option("server", "download"), config.get_option("server", "preview")),
         "token": getattr(args, "token", config.get_option("client", "token")),
         "proxies": getattr(args, "proxies", config.get_option("client", "proxies")),
         "user_agent": getattr(args, "user_agent", config.get_option("client", "user_agent")) or RequestHandler.build_user_agent(__package__, __version__),
         "enable_logging": args.logging or config.get_option("client", "enable_logging"),
     }
 
-    # NOTE: Uses the PixelDrain provider by default for now
-    provider = PixelDrain(**kwargs)
+    provider = AnonPy(**kwargs)
     provider.logger \
         .set_base_path(module_folder) \
         .with_level(LogLevel(config.get_option("client", "log_level"))) \
