@@ -27,8 +27,8 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
     download_parser = subparser.add_parser("download", help="download a file")
     download_urls_group = download_parser.add_mutually_exclusive_group(required=True)
     download_urls_group.add_argument("-r", "--resource", nargs="*", type=str, help="one or more resources to download")
-    download_urls_group.add_argument("-f", "--batch-file", type=Path, nargs="?", help="file containing resources to download")
+    download_urls_group.add_argument("-b", "--batch-file", type=Path, nargs="?", help="file containing resources to download")
     download_parser.add_argument("-p", "--path", type=Path, default=SUPPRESS, help="download directory (CWD by default)")
-    download_parser.add_argument("-c", "--check", default=False, action="store_true", help="check for duplicates")
+    download_parser.add_argument("-f", "--force", default=False, action="store_true", help="overwrite duplicates, if any")
 
     return parser

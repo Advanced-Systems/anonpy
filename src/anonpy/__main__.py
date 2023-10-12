@@ -35,7 +35,7 @@ def upload(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
 def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
     download_directory = Path(getattr(args, "path", config.get_option("client", "download_directory")))
     verbose = args.verbose or config.get_option("client", "verbose")
-    check = args.check or config.get_option("client", "check")
+    force = args.force or config.get_option("client", "force")
 
     for resource in (args.resource or read_file(args.batch_file)):
         preview = anon.preview(resource)
@@ -46,7 +46,7 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
             anon.logger.error("Download Error: resource %s responded with %s" % (args.resource, str(preview)), stacklevel=2)
             continue
 
-        if check and download_directory.joinpath(file).exists():
+        if not force and download_directory.joinpath(file).exists():
             print(f"WARNING: The file {str(file)!r} already exists in {str(download_directory)!r}.")
             prompt = input("Proceed with download? [Y/n] ")
             if not str2bool(prompt): continue
@@ -81,7 +81,7 @@ def _start(module_folder: Path, cfg_file: str) -> ArgumentParser:
                 "enable_logging": False,
                 "log_level": LogLevel.INFO.value,
                 "verbose": True,
-                "check": True,
+                "force": False,
             })
 
             config_handler.add_section("server", settings={
