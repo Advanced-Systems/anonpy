@@ -20,6 +20,7 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
     subparser = parser.add_subparsers(dest="command")
     upload_parser = subparser.add_parser("upload", help="upload a file")
     upload_parser.add_argument("-f", "--file", nargs="+", type=Path, help="one or more files to upload.", required=True)
+    upload_parser.add_argument("-c", "--clip", default=False, action="store_true", help="copy download URL to clipboard")
 
     preview_parser = subparser.add_parser("preview", help="read meta data from a remote file")
     preview_parser.add_argument("-r", "--resource", nargs="+", type=str, help="one or more resources to preview", required=True)

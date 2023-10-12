@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import json
 import difflib
+import json
+import subprocess
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Tuple
@@ -14,7 +15,7 @@ from rich.panel import Panel
 
 from .anonpy import AnonPy, Endpoint
 from .cli import build_parser
-from .internals import ConfigHandler, LogLevel, RequestHandler, __credits__, __package__, __version__, get_resource_path, read_file, str2bool
+from .internals import ConfigHandler, LogLevel, RequestHandler, __credits__, __package__, __version__, get_resource_path, join_url, read_file, str2bool
 from .security import MD5, Checksum
 
 #region helpers
@@ -26,6 +27,9 @@ def print_diff(a: str, b: str, console: Console) -> None:
         )
 
         console.print("".join(diff), end="")
+
+def copy_to_clipboard(text: str) -> None:
+    subprocess.run("clip", input=text, check=True, encoding="utf-8")
 
 #endregion
 
@@ -42,11 +46,17 @@ def upload(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Consol
     verbose = args.verbose or config.get_option("client", "verbose")
 
     for file in args.file:
-        anon.upload(file, progressbar=verbose)
+        upload = anon.upload(file, progressbar=verbose)
+        url = upload.get("url", False) or join_url(anon.api.geturl(), anon.endpoint.download.format(upload["id"]))
+        anon.logger.info("Uploaded %s to %s" % (file, url))
+
+        if args.clip: copy_to_clipboard(url)
 
         if not verbose: continue
-        md5 = Checksum.compute(path=file, algorithm=MD5)
-        console.print(f"MD5={Checksum.hash2string(md5)}")
+        computed_hash = Checksum.compute(path=file, algorithm=MD5)
+        checksum = Checksum.hash2string(computed_hash)
+        console.print(f"URL={url}")
+        console.print(f"MD5={checksum}")
 
 def download(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Console) -> None:
     download_directory = Path(getattr(args, "path", config.get_option("client", "download_directory")))
@@ -70,9 +80,10 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Cons
         anon.download(resource, download_directory, progressbar=verbose)
 
         if getattr(args, "checksum", None) is None: continue
-        computed_checksum = Checksum.compute(path=file, algorithm=MD5)
+        computed_hash = Checksum.compute(path=file, algorithm=MD5)
+        computed_checksum = Checksum.hash2string(computed_hash)
 
-        if verbose: console.print(f"CHECKSUM={Checksum.hash2string(computed_checksum)}")
+        if verbose: console.print(f"MD5={computed_checksum}")
 
         expected_checksum = args.checksum
         corrupt = computed_checksum != expected_checksum
