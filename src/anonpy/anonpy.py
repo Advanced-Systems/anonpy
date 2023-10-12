@@ -106,7 +106,7 @@ class AnonPy(RequestHandler):
                     files={"file": CallbackIOWrapper(tqdm_handler.update, file_handler, "read")}
                 )
 
-                self.logger.info("Download: %s", file, hide=not self.enable_logging, stacklevel=2)
+                self.logger.info("Upload: %s", file, hide=not self.enable_logging, stacklevel=2)
                 return response.json()
 
     def preview(self: Self, resource: str) -> Dict:
@@ -145,5 +145,5 @@ class AnonPy(RequestHandler):
                         tqdm_handler.update(len(chunk))
                         file_handler.write(chunk)
 
-        self.logger.info("Upload: %s", url, hide=not self.enable_logging, stacklevel=2)
+        self.logger.info("Download: %s", url, hide=not self.enable_logging, stacklevel=2)
         return preview
