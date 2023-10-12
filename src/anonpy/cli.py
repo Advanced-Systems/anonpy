@@ -30,5 +30,6 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
     download_urls_group.add_argument("-b", "--batch-file", type=Path, nargs="?", help="file containing resources to download")
     download_parser.add_argument("-p", "--path", type=Path, default=SUPPRESS, help="download directory (CWD by default)")
     download_parser.add_argument("-f", "--force", default=False, action="store_true", help="overwrite duplicates, if any")
+    download_parser.add_argument("-c", "--checksum", type=str, default=SUPPRESS, help="expected MD5 checksum value for integrity test")
 
     return parser

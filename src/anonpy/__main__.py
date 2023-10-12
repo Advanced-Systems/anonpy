@@ -1,28 +1,44 @@
 #!/usr/bin/env python3
 
 import json
-import sys
+import difflib
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from typing import Tuple
 
 from colorama import Fore, Style, deinit, just_fix_windows_console
 from requests.exceptions import HTTPError
+from rich.console import Console
+from rich.json import JSON
+from rich.panel import Panel
 
 from .anonpy import AnonPy, Endpoint
 from .cli import build_parser
 from .internals import ConfigHandler, LogLevel, RequestHandler, __credits__, __package__, __version__, get_resource_path, read_file, str2bool
 from .security import MD5, Checksum
 
+#region helpers
+
+def print_diff(a: str, b: str, console: Console) -> None:
+        diff = difflib.ndiff(
+            f"{a}\n".splitlines(keepends=True),
+            f"{b}\n".splitlines(keepends=True)
+        )
+
+        console.print("".join(diff), end="")
+
+#endregion
+
 #region commands
 
-def preview(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
+def preview(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Console) -> None:
     verbose = args.verbose or config.get_option("client", "verbose")
 
     for resource in args.resource:
         preview = anon.preview(resource)
-        print(json.dumps(preview, indent=4) if verbose else ",".join(preview.values()))
+        console.print(JSON(json.dumps(preview)) if verbose else ",".join(preview.values()))
 
-def upload(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
+def upload(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Console) -> None:
     verbose = args.verbose or config.get_option("client", "verbose")
 
     for file in args.file:
@@ -30,9 +46,9 @@ def upload(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
 
         if not verbose: continue
         md5 = Checksum.compute(path=file, algorithm=MD5)
-        print(f"MD5={Checksum.hash2string(md5)}")
+        console.print(f"MD5={Checksum.hash2string(md5)}")
 
-def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
+def download(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Console) -> None:
     download_directory = Path(getattr(args, "path", config.get_option("client", "download_directory")))
     verbose = args.verbose or config.get_option("client", "verbose")
     force = args.force or config.get_option("client", "force")
@@ -42,26 +58,34 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
         file = preview.get("name")
 
         if file is None:
-            print("Aborting download: unable to read file name property from preview response", file=sys.stderr)
+            console.print("Aborting download: unable to determine file name property from preview response", style="bold red")
             anon.logger.error("Download Error: resource %s responded with %s" % (args.resource, str(preview)), stacklevel=2)
             continue
 
         if not force and download_directory.joinpath(file).exists():
-            print(f"WARNING: The file {str(file)!r} already exists in {str(download_directory)!r}.")
-            prompt = input("Proceed with download? [Y/n] ")
+            console.print(f"[bold yellow]WARNING:[/] The file {str(file)} already exists in {str(download_directory)}.")
+            prompt = console.input("Proceed with download? [dim][Y/n][/] ")
             if not str2bool(prompt): continue
 
         anon.download(resource, download_directory, progressbar=verbose)
 
-        if not verbose: continue
-        md5 = Checksum.compute(path=file, algorithm=MD5)
-        print(f"MD5={Checksum.hash2string(md5)}")
+        if getattr(args, "checksum", None) is None: continue
+        computed_checksum = Checksum.compute(path=file, algorithm=MD5)
+
+        if verbose: console.print(f"CHECKSUM={Checksum.hash2string(computed_checksum)}")
+
+        expected_checksum = args.checksum
+        corrupt = computed_checksum != expected_checksum
+
+        if not corrupt: continue
+        print_diff(computed_checksum, expected_checksum, console)
 
 #endregion
 
-def _start(module_folder: Path, cfg_file: str) -> ArgumentParser:
+def _start(module_folder: Path, cfg_file: str) -> Tuple[ArgumentParser, Console]:
     # Enable Windows' built-in ANSI support
     just_fix_windows_console()
+    console = Console(color_system="256")
 
     # Configure parser
     description = f"{Fore.WHITE}{Style.DIM}Command line interface for anonymous file sharing.{Style.RESET_ALL}"
@@ -91,14 +115,14 @@ def _start(module_folder: Path, cfg_file: str) -> ArgumentParser:
                 "preview": "/file/{}/info"
             })
 
-    return parser
+    return (parser, console)
 
 def main() -> None:
     module_folder = get_resource_path(__package__)
     cfg_file = "anonpy.ini"
     log_file = "anonpy.log"
 
-    parser = _start(module_folder, cfg_file)
+    parser, console = _start(module_folder, cfg_file)
     args = parser.parse_args()
 
     config = ConfigHandler(getattr(args, "config", module_folder / cfg_file))
@@ -125,11 +149,11 @@ def main() -> None:
     try:
         match args.command:
             case "preview":
-                preview(provider, args, config)
+                preview(provider, args, config, console)
             case "upload":
-                upload(provider, args, config)
+                upload(provider, args, config, console)
             case "download":
-                download(provider, args, config)
+                download(provider, args, config, console)
             case _:
                 raise NotImplementedError()
 
@@ -139,16 +163,17 @@ def main() -> None:
         parser.print_help()
     except HTTPError as http_error:
         provider.logger.error("Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text), stacklevel=2)
-        print(http_error.response.text, file=sys.stderr)
+        console.print(http_error.response.text, style="bold red")
     except Exception as exception:
         provider.logger.critical(exception, stacklevel=2)
-        print(exception.with_traceback(), file=sys.stderr)
+        console.print_exception(show_locals=True)
     except:
-        print("\n".join([
-            "An unhandled exception was thrown. The log file may give you more",
-            f"insight into what went wrong: {module_folder!r}.\nAlternatively, file",
-            "a bug report on GitHub at https://github.com/advanced-systems/anonpy."
-        ]), file=sys.stderr)
+        console.print(Panel(
+            "\n".join([
+                f"An unhandled exception was thrown. The log file may give you more insight into what went wrong: [bold yellow]{module_folder}[/].",
+                f"Alternatively, file a bug report on GitHub at [bold blue]https://github.com/advanced-systems/anonpy[/]."
+            ])
+        ))
     finally:
         deinit()
         provider.logger.shutdown()
