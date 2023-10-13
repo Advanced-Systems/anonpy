@@ -49,13 +49,13 @@ def upload(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Consol
         upload = anon.upload(file, progressbar=verbose)
         url = upload.get("url", False) or join_url(anon.api.geturl(), anon.endpoint.download.format(upload["id"]))
         anon.logger.info("Uploaded %s to %s" % (file, url))
+        console.print(f"URL={url}")
 
         if args.clip: copy_to_clipboard(url)
 
         if not verbose: continue
         computed_hash = Checksum.compute(path=file, algorithm=MD5)
         checksum = Checksum.hash2string(computed_hash)
-        console.print(f"URL={url}")
         console.print(f"MD5={checksum}")
 
 def download(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Console) -> None:
@@ -88,8 +88,7 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Cons
         expected_checksum = args.checksum
         corrupt = computed_checksum != expected_checksum
 
-        if not corrupt: continue
-        print_diff(computed_checksum, expected_checksum, console)
+        if corrupt: print_diff(computed_checksum, expected_checksum, console)
 
 #endregion
 
