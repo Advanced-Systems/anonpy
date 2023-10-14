@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from pathlib import Path
 from types import TracebackType
 from typing import Any, Dict, List, Optional, Self, Type, Union
@@ -81,13 +81,19 @@ class ConfigHandler:
         """
         Return a list of option names for the given section name.
         """
-        return self.__config.options(section)
+        try:
+            return self.__config.options(section)
+        except NoSectionError:
+            return []
 
     def get_option(self: Self, section: str, option: str) -> Optional[Any]:
         """
         Get the value of an option for a given section.
         """
-        return convert(self.__config.get(section, option))
+        try:
+            return convert(self.__config.get(section, option))
+        except NoOptionError:
+            return None
 
     def set_option(self: Self, section: str, option: str, value: Optional[Any]) -> None:
         """
