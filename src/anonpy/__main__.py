@@ -59,8 +59,9 @@ def preview(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Conso
     verbose = args.verbose or config.get_option("client", "verbose")
 
     for resource in args.resource:
-        preview = anon.preview(resource)
-        console.print(JSON(json.dumps(preview)) if verbose else ",".join(preview.values()))
+        with console.status("fetching data...") as _:
+            preview = anon.preview(resource)
+            console.print(JSON(json.dumps(preview)) if verbose else ",".join(preview.values()))
 
 def upload(anon: AnonPy, args: Namespace, config: ConfigHandler, console: Console) -> None:
     verbose = args.verbose or config.get_option("client", "verbose")
