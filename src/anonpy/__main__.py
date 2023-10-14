@@ -31,6 +31,26 @@ def print_diff(a: str, b: str, console: Console) -> None:
 def copy_to_clipboard(text: str) -> None:
     subprocess.run("clip", input=text, check=True, encoding="utf-8")
 
+def init_settings(cfg_path: Path) -> None:
+    with ConfigHandler(cfg_path) as config_handler:
+        config_handler.add_section("client", settings={
+            "download_directory": Path("~/downloads").expanduser(),
+            "token": None,
+            "user_agent": None,
+            "proxies": None,
+            "enable_logging": False,
+            "log_level": LogLevel.INFO.value,
+            "verbose": True,
+            "force": False,
+        })
+
+        config_handler.add_section("server", settings={
+            "api": "https://pixeldrain.com/api/",
+            "upload": "/file",
+            "download": "/file{}",
+            "preview": "/file/{}/info"
+        })
+
 #endregion
 
 #region commands
@@ -106,24 +126,7 @@ def _start(module_folder: Path, cfg_file: str) -> Tuple[ArgumentParser, Console]
     cfg_path = module_folder / cfg_file
 
     if not cfg_path.exists():
-        with ConfigHandler(cfg_path) as config_handler:
-            config_handler.add_section("client", settings={
-                "download_directory": Path("~/downloads").expanduser(),
-                "token": None,
-                "user_agent": None,
-                "proxies": None,
-                "enable_logging": False,
-                "log_level": LogLevel.INFO.value,
-                "verbose": True,
-                "force": False,
-            })
-
-            config_handler.add_section("server", settings={
-                "api": "https://pixeldrain.com/api/",
-                "upload": "/file",
-                "download": "/file{}",
-                "preview": "/file/{}/info"
-            })
+        init_settings(cfg_path)
 
     return (parser, console)
 
@@ -154,7 +157,13 @@ def main() -> None:
         .add_handler(log_file)
 
     if args.gui:
-        raise NotImplementedError("This feature is not implemented yet, see also: https://github.com/Advanced-Systems/anonpy/discussions/11")
+        console.print("[bold red]ERROR:[/] This feature is not implemented yet, see also: https://github.com/Advanced-Systems/anonpy/discussions/11")
+        return
+
+    if args.reset_config:
+        config.path.unlink(missing_ok=True)
+        init_settings(config.path)
+        return
 
     try:
         match args.command:
