@@ -153,7 +153,7 @@ class RequestHandler:
         session.headers.update({"User-Agent": self.user_agent})
         return session
 
-    def _get(self: Self, endpoint: str, **kwargs) -> Response:
+    def _get(self: Self, relative_path: str, **kwargs) -> Response:
         """
         Return the GET request, encoded in `utf-8` by default. This method will
         add proxies to this session on the fly if urllib is able to pick up the
@@ -163,7 +163,7 @@ class RequestHandler:
         code.
         """
         response = self._session.get(
-            url=join_url(self.api.geturl(), endpoint),
+            url=join_url(self.api.geturl(), relative_path),
             timeout=self.timeout,
             proxies=self.proxies,
             **kwargs
@@ -171,24 +171,24 @@ class RequestHandler:
         response.encoding = self.encoding
         return response
 
-    def _post(self, endpoint: str, **kwargs) -> Response:
+    def _post(self, relative_path: str, **kwargs) -> Response:
         """
         Send a POST request and return a `Response` object as a result.
         """
         return self._session.post(
-            url=join_url(self.api.geturl(), endpoint),
+            url=join_url(self.api.geturl(), relative_path),
             timeout=self.timeout,
             proxies=self.proxies,
             verify=True,
             **kwargs
         )
 
-    def _put(self, endpoint: str, **kwargs) -> Response:
+    def _put(self, relative_path: str, **kwargs) -> Response:
         """
         Send a PUT request and return a `Response` object as a result.
         """
         return self._session.put(
-            url=join_url(self.api.geturl(), endpoint),
+            url=join_url(self.api.geturl(), relative_path),
             timeout=self.timeout,
             proxies=self.proxies,
             verify=True,

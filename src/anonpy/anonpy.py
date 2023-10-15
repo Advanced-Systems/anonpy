@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Self, Union, overload
 
 from .endpoint import Endpoint
-from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, get_progress_bar, truncate
+from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, get_progress_bar, join_url, truncate
 
 
 class AnonPy(RequestHandler):
@@ -82,12 +82,13 @@ class AnonPy(RequestHandler):
 
     def upload(self: Self, path: Union[str, Path], enable_progressbar: bool=False) -> Dict:
         """
-        Upload a file. Set `progressbar` to `True` to enable a terminal progress indicator.
+        Upload a file. Set `enable_progressbar` to `True` to enable a terminal
+        progress indicator.
         """
         MB = 1_048_576
         name = Path(path).name
         size = os.stat(path).st_size
-        response = None
+        # response = None
         chunk_size = min(1*MB, size // 2)
 
         with get_progress_bar() as progress:
@@ -106,8 +107,22 @@ class AnonPy(RequestHandler):
 
             progress.stop_task(task_id)
 
-        self.logger.info("Upload: %s", name, hide=not self.enable_logging, stacklevel=2)
-        return response.json()
+        response_data = response.json()
+
+        if url:=response_data.get("url") is None:
+            resource = response_data.get("id", "UNKNOWN")
+            relative_url = self.endpoint.download.format(resource)
+            url = join_url(self.api.geturl(), relative_url)
+
+        self.logger.info("Upload: %s to %s", name, url, hide=not self.enable_logging, stacklevel=2)
+
+        return {
+            "name": name,
+            "folder": path,
+            "size": size,
+            "resource": resource,
+            "url": url,
+        }
 
     def preview(self: Self, resource: str) -> Dict:
         """
@@ -155,7 +170,8 @@ class AnonPy(RequestHandler):
             raise TypeError("invalid combination of arguments")
 
         MB = 1_048_576
-        url = self.endpoint.download.format(resource)
+        relative_path = self.endpoint.download.format(resource)
+        url = join_url(self.api.geturl(), relative_path)
         full_path = path / name
         chunk_size = min(1*MB, size // 2)
 
@@ -163,7 +179,7 @@ class AnonPy(RequestHandler):
             task_id = progress.add_task("Download", total=size, name=truncate(name, width=40), visible=enable_progressbar)
 
             with open(full_path, mode="wb") as file_handler:
-                with self._get(url, stream=True) as response:
+                with self._get(relative_path, stream=True) as response:
                     for chunk in response.iter_content(chunk_size):
                         file_handler.write(chunk)
                         progress.update(task_id, advance=len(chunk))
@@ -171,9 +187,11 @@ class AnonPy(RequestHandler):
             progress.stop_task(task_id)
 
         self.logger.info("Download %s to %s", url, full_path, hide=not self.enable_logging, stacklevel=2)
+
         return {
             "name": name,
-            "download_directory": path,
+            "folder": path,
             "size": size,
-            "url": url
+            "resource": resource,
+            "url": url,
         }

@@ -66,7 +66,7 @@ def upload(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
 
     for file in args.file:
         upload = anon.upload(file, enable_progressbar=verbose)
-        url = upload.get("url", False) or join_url(anon.api.geturl(), anon.endpoint.download.format(upload["id"]))
+        url = upload["url"]
         anon.logger.info("Uploaded %s to %s" % (file, url))
         console.print(f"URL={url}")
 
@@ -83,18 +83,10 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
     force = args.force or config.get_option("client", "force")
 
     for resource in (args.resource or read_file(args.batch_file)):
-        name = None
-        size = None
-
         with console.status("fetching data...") as _:
             preview = anon.preview(resource)
-            name = preview.get("name")
-            size = preview.get("size")
-
-        if name is None or size is None:
-            console.print("[bold red]ERROR:[/] unable to determine properties from preview response, aborting download", style="bold red")
-            anon.logger.error("ERROR: resource %s responded with %s during download" % (args.resource, str(preview)), stacklevel=2)
-            continue
+            name = preview["name"]
+            size = int(preview["size"])
 
         full_path = download_directory / name
 
@@ -103,7 +95,7 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
             prompt = console.input("Proceed with download? [dim][Y/n][/] ")
             if not str2bool(prompt): continue
 
-        anon.download(resource, download_directory, enable_progressbar=verbose, size=int(size), name=name)
+        anon.download(resource, download_directory, enable_progressbar=verbose, size=size, name=name)
         console.print(f"PATH=[bold blue]{str(full_path)}[/]")
 
         if getattr(args, "checksum", None) is None: continue
