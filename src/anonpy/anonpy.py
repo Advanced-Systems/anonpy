@@ -4,11 +4,8 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Self, Union
 
-from tqdm import tqdm
-from tqdm.utils import CallbackIOWrapper
-
 from .endpoint import Endpoint
-from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, _progressbar_options
+from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, get_progress_bar, truncate
 
 
 class AnonPy(RequestHandler):
@@ -87,27 +84,30 @@ class AnonPy(RequestHandler):
         """
         Upload a file. Set `progressbar` to `True` to enable a terminal progress indicator.
         """
-        path = Path(path)
-        file = path.name
+        MB = 1_048_576
+        name = Path(path).name
         size = os.stat(path).st_size
-        options = _progressbar_options(
-            None,
-            f"Upload: {file}",
-            unit="B",
-            total=size,
-            disable=progressbar
-        )
+        response = None
+        chunk_size = min(1*MB, size // 2)
 
-        with open(path, mode="rb") as file_handler:
-            with tqdm(**options) as tqdm_handler:
-                response = self._post(
-                    self.endpoint.upload,
-                    params={"token": self.token},
-                    files={"file": CallbackIOWrapper(tqdm_handler.update, file_handler, "read")}
-                )
+        with get_progress_bar() as progress:
+            task_id = progress.add_task("Upload", total=size, name=truncate(name, width=40), visible=progressbar)
 
-                self.logger.info("Upload: %s", file, hide=not self.enable_logging, stacklevel=2)
-                return response.json()
+            with open(path, mode="rb") as file_handler:
+                for chunk in iter(lambda: file_handler.read(chunk_size), b""):
+                    response = self._post(
+                        self.endpoint.upload,
+                        files={
+                            "file": (name, chunk),
+                            "token": self.token,
+                        }
+                    )
+                    progress.update(task_id, advance=len(chunk))
+
+            progress.stop_task(task_id)
+
+        self.logger.info("Upload: %s", name, hide=not self.enable_logging, stacklevel=2)
+        return response.json()
 
     def preview(self: Self, resource: str) -> Dict:
         """
@@ -130,20 +130,21 @@ class AnonPy(RequestHandler):
         MB = 1_048_576
         preview = self.preview(resource)
         url = self.endpoint.download.format(resource)
-        options = _progressbar_options(
-            None,
-            f"Download {preview.get('id', 'N/A')}",
-            unit="B",
-            total=preview.get("size", 0),
-            disable=progressbar
-        )
+        name = preview.get("name", "unknown.tmp")
+        full_path = path / name
+        size = int(preview["size"])
+        chunk_size = min(1*MB, size // 2)
 
-        with open(path.joinpath(preview.get("name", "N/A")), mode="wb") as file_handler:
-            with tqdm(**options) as tqdm_handler:
+        with get_progress_bar() as progress:
+            task_id = progress.add_task("Download", total=size, name=truncate(name, width=40), visible=progressbar)
+
+            with open(full_path, mode="wb") as file_handler:
                 with self._get(url, stream=True) as response:
-                    for chunk in response.iter_content(chunk_size=1*MB):
-                        tqdm_handler.update(len(chunk))
+                    for chunk in response.iter_content(chunk_size):
                         file_handler.write(chunk)
+                        progress.update(task_id, advance=len(chunk))
 
-        self.logger.info("Download: %s", url, hide=not self.enable_logging, stacklevel=2)
+            progress.stop_task(task_id)
+
+        self.logger.info("Download %s to %s", url, full_path, hide=not self.enable_logging, stacklevel=2)
         return preview

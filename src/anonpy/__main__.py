@@ -45,7 +45,7 @@ def init_settings(cfg_path: Path) -> None:
         config_handler.add_section("server", settings={
             "api": "https://pixeldrain.com/api/",
             "upload": "/file",
-            "download": "/file{}",
+            "download": "/file/{}",
             "preview": "/file/{}/info"
         })
 
@@ -75,7 +75,7 @@ def upload(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
         if not verbose: continue
         computed_hash = Checksum.compute(path=file, algorithm=MD5)
         checksum = Checksum.hash2string(computed_hash)
-        console.print(f"MD5={checksum}")
+        console.print(f"MD5=[bold blue]{checksum}[/]")
 
 def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
     download_directory = Path(getattr(args, "path", config.get_option("client", "download_directory")))
@@ -83,20 +83,24 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
     force = args.force or config.get_option("client", "force")
 
     for resource in (args.resource or read_file(args.batch_file)):
-        preview = anon.preview(resource)
-        file = preview.get("name")
+        file = None
+
+        with console.status("fetching data...") as _:
+            preview = anon.preview(resource)
+            file = preview.get("name")
 
         if file is None:
-            console.print("Aborting download: unable to determine file name property from preview response", style="bold red")
-            anon.logger.error("Download Error: resource %s responded with %s" % (args.resource, str(preview)), stacklevel=2)
+            console.print("[bold red]ERROR:[/] unable to determine file name property from preview response, aborting download", style="bold red")
+            anon.logger.error("ERROR: resource %s responded with %s during download" % (args.resource, str(preview)), stacklevel=2)
             continue
 
         if not force and download_directory.joinpath(file).exists():
-            console.print(f"[bold yellow]WARNING:[/] The file {str(file)} already exists in {str(download_directory)}.")
+            console.print(f"[bold yellow]WARNING:[/] The file [bold blue]{str(file)}[/] already exists in [bold blue]{str(download_directory)}[/]")
             prompt = console.input("Proceed with download? [dim][Y/n][/] ")
             if not str2bool(prompt): continue
 
-        anon.download(resource, download_directory, progressbar=verbose)
+        download = anon.download(resource, download_directory, progressbar=verbose)
+        console.print(f"PATH=[bold blue]{str(download_directory / download["name"])}[/]")
 
         if getattr(args, "checksum", None) is None: continue
         computed_hash = Checksum.compute(path=file, algorithm=MD5)
@@ -179,7 +183,7 @@ def main() -> None:
     except NotImplementedError:
         parser.print_help()
     except HTTPError as http_error:
-        provider.logger.error("Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text), stacklevel=2)
+        provider.logger.error("ERROR: Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text), stacklevel=2)
         console.print(http_error.response.text, style="bold red")
     except Exception as exception:
         provider.logger.critical(exception, stacklevel=2)
@@ -187,6 +191,7 @@ def main() -> None:
     except:
         console.print(Panel(
             "\n".join([
+                "[bold red]FATAL ERROR[/]",
                 f"An unhandled exception was thrown. The log file may give you more insight into what went wrong: [bold yellow]{module_folder}[/].",
                 f"Alternatively, file a bug report on GitHub at [bold blue]https://github.com/advanced-systems/anonpy[/]."
             ])

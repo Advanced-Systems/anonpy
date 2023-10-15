@@ -8,15 +8,16 @@ from .log_handler import LogHandler, LogLevel
 from .request_handler import RequestHandler
 from .timeout import Timeout
 from .utils import (
-    _progressbar_options,
     console,
     convert,
+    get_progress_bar,
     get_resource_path,
     get_while,
     ignore_warnings,
     join_url,
     read_file,
     str2bool,
+    truncate,
     unique
 )
 
