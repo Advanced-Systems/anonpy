@@ -88,7 +88,6 @@ class AnonPy(RequestHandler):
         MB = 1_048_576
         name = Path(path).name
         size = os.stat(path).st_size
-        # response = None
         chunk_size = min(1*MB, size // 2)
 
         with get_progress_bar() as progress:
@@ -114,7 +113,7 @@ class AnonPy(RequestHandler):
             relative_url = self.endpoint.download.format(resource)
             url = join_url(self.api.geturl(), relative_url)
 
-        self.logger.info("Upload: %s to %s", name, url, hide=not self.enable_logging, stacklevel=2)
+        self.logger.info("Upload %s to %s", name, url, hide=not self.enable_logging, stacklevel=2)
 
         return {
             "name": name,
