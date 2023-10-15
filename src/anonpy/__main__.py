@@ -65,7 +65,7 @@ def upload(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
     verbose = args.verbose or config.get_option("client", "verbose")
 
     for file in args.file:
-        upload = anon.upload(file, progressbar=verbose)
+        upload = anon.upload(file, enable_progressbar=verbose)
         url = upload.get("url", False) or join_url(anon.api.geturl(), anon.endpoint.download.format(upload["id"]))
         anon.logger.info("Uploaded %s to %s" % (file, url))
         console.print(f"URL={url}")
@@ -83,27 +83,31 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
     force = args.force or config.get_option("client", "force")
 
     for resource in (args.resource or read_file(args.batch_file)):
-        file = None
+        name = None
+        size = None
 
         with console.status("fetching data...") as _:
             preview = anon.preview(resource)
-            file = preview.get("name")
+            name = preview.get("name")
+            size = preview.get("size")
 
-        if file is None:
-            console.print("[bold red]ERROR:[/] unable to determine file name property from preview response, aborting download", style="bold red")
+        if name is None or size is None:
+            console.print("[bold red]ERROR:[/] unable to determine properties from preview response, aborting download", style="bold red")
             anon.logger.error("ERROR: resource %s responded with %s during download" % (args.resource, str(preview)), stacklevel=2)
             continue
 
-        if not force and download_directory.joinpath(file).exists():
-            console.print(f"[bold yellow]WARNING:[/] The file [bold blue]{str(file)}[/] already exists in [bold blue]{str(download_directory)}[/]")
+        full_path = download_directory / name
+
+        if not force and full_path.exists():
+            console.print(f"[bold yellow]WARNING:[/] The file [bold blue]{str(full_path)}[/] already exists")
             prompt = console.input("Proceed with download? [dim][Y/n][/] ")
             if not str2bool(prompt): continue
 
-        download = anon.download(resource, download_directory, progressbar=verbose)
-        console.print(f"PATH=[bold blue]{str(download_directory / download["name"])}[/]")
+        anon.download(resource, download_directory, enable_progressbar=verbose, size=int(size), name=name)
+        console.print(f"PATH=[bold blue]{str(full_path)}[/]")
 
         if getattr(args, "checksum", None) is None: continue
-        computed_hash = Checksum.compute(path=file, algorithm=MD5)
+        computed_hash = Checksum.compute(path=name, algorithm=MD5)
         computed_checksum = Checksum.hash2string(computed_hash)
 
         if verbose: console.print(f"MD5={computed_checksum}")

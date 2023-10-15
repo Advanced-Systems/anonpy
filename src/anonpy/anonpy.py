@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Self, Union
+from typing import Dict, List, Optional, Self, Union, overload
 
 from .endpoint import Endpoint
 from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, get_progress_bar, truncate
@@ -80,7 +80,7 @@ class AnonPy(RequestHandler):
         self.enable_logging = enable_logging
         self.logger = LogHandler(level=LogLevel.INFO)
 
-    def upload(self: Self, path: Union[str, Path], progressbar: bool=False) -> Dict:
+    def upload(self: Self, path: Union[str, Path], enable_progressbar: bool=False) -> Dict:
         """
         Upload a file. Set `progressbar` to `True` to enable a terminal progress indicator.
         """
@@ -91,7 +91,7 @@ class AnonPy(RequestHandler):
         chunk_size = min(1*MB, size // 2)
 
         with get_progress_bar() as progress:
-            task_id = progress.add_task("Upload", total=size, name=truncate(name, width=40), visible=progressbar)
+            task_id = progress.add_task("Upload", total=size, name=truncate(name, width=40), visible=enable_progressbar)
 
             with open(path, mode="rb") as file_handler:
                 for chunk in iter(lambda: file_handler.read(chunk_size), b""):
@@ -118,25 +118,49 @@ class AnonPy(RequestHandler):
         self.logger.info("Preview: %s", resource, hide=not self.enable_logging, stacklevel=2)
         return response.json()
 
+    @overload
+    def download(self: Self, resource: str, path: Union[str, Path]) -> Dict:
+        """
+        Download a `resource` and save the file to `path`.
+        """
+        ...
+
+    @overload
+    def download(
+            self: Self,
+            resource: str,
+            path: Union[str, Path],
+            enable_progressbar: bool,
+            size: int,
+            name: str,
+        ) -> Dict:
+        """
+        Download a `resource` and save the file to `path`. If `enable_progressbar`
+        is set to `True`, also specify the total file `size` and file `name` as
+        arguments.
+
+        Raise a `TypeError` exception if the aforementioned rule is violated.
+        """
+        ...
+
     def download(
             self: Self,
             resource: str,
             path: Union[str, Path]=Path.cwd(),
-            progressbar: bool=False
+            enable_progressbar: bool=False,
+            size: Optional[int]=None,
+            name: Optional[str]=None,
         ) -> Dict:
-        """
-        Download a file. Set `progressbar` to `True` to enable a terminal progress indicator.
-        """
+        if enable_progressbar and (size is None or name is None):
+            raise TypeError("invalid combination of arguments")
+
         MB = 1_048_576
-        preview = self.preview(resource)
         url = self.endpoint.download.format(resource)
-        name = preview.get("name", "unknown.tmp")
         full_path = path / name
-        size = int(preview["size"])
         chunk_size = min(1*MB, size // 2)
 
         with get_progress_bar() as progress:
-            task_id = progress.add_task("Download", total=size, name=truncate(name, width=40), visible=progressbar)
+            task_id = progress.add_task("Download", total=size, name=truncate(name, width=40), visible=enable_progressbar)
 
             with open(full_path, mode="wb") as file_handler:
                 with self._get(url, stream=True) as response:
@@ -147,4 +171,9 @@ class AnonPy(RequestHandler):
             progress.stop_task(task_id)
 
         self.logger.info("Download %s to %s", url, full_path, hide=not self.enable_logging, stacklevel=2)
-        return preview
+        return {
+            "name": name,
+            "download_directory": path,
+            "size": size,
+            "url": url
+        }
