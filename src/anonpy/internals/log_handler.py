@@ -108,7 +108,7 @@ class LogHandler:
             case ".json":
                 self.formatter = JsonFormatter(fmt_dict=layout or default_structured_layout)
             case "rich_console":
-                rich_handler = RichHandler()
+                rich_handler = RichHandler(rich_tracebacks=True)
                 self.handlers["rich_console"] = rich_handler
                 self.__logger.addHandler(rich_handler)
                 return self

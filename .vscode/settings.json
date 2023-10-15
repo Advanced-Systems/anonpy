@@ -25,6 +25,7 @@
         "levelname",
         "pipx",
         "tqdm",
+        "tracebacks",
         "urandom"
     ]
 }
