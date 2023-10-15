@@ -105,7 +105,7 @@ def download(anon: AnonPy, args: Namespace, config: ConfigHandler) -> None:
         if verbose: console.print(f"MD5={computed_checksum}")
 
         expected_checksum = args.checksum
-        corrupt = computed_checksum != expected_checksum
+        corrupt = computed_checksum.lower() != expected_checksum.lower()
 
         if corrupt: print_diff(computed_checksum, expected_checksum, console)
 
