@@ -8,6 +8,9 @@ import warnings
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 
+from rich.console import Console
+
+console = Console(color_system="256")
 
 def convert(value: str) -> Optional[Any]:
     """
