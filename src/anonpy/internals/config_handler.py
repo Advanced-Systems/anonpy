@@ -86,14 +86,14 @@ class ConfigHandler:
         except NoSectionError:
             return []
 
-    def get_option(self: Self, section: str, option: str) -> Optional[Any]:
+    def get_option(self: Self, section: str, option: str, default: Optional[Any]=None) -> Optional[Any]:
         """
         Get the value of an option for a given section.
         """
         try:
             return convert(self.__config.get(section, option))
         except NoOptionError:
-            return None
+            return default
 
     def set_option(self: Self, section: str, option: str, value: Optional[Any]) -> None:
         """
