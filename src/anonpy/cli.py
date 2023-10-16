@@ -23,6 +23,7 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
     upload_parser = subparser.add_parser("upload", help="upload a file")
     upload_parser.add_argument("-f", "--file", nargs="+", type=Path, help="one or more files to upload.", required=True)
     upload_parser.add_argument("-c", "--clip", default=False, action="store_true", help="copy download URL to clipboard")
+    upload_parser.add_argument("--algorithm", type=str, default=SUPPRESS, help="checksum algorithm")
 
     preview_parser = subparser.add_parser("preview", help="read meta data from a remote file")
     preview_parser.add_argument("-r", "--resource", nargs="+", type=str, help="one or more resources to preview", required=True)
@@ -34,5 +35,6 @@ def build_parser(package_name: str, version: str, description: str, epilog: str)
     download_parser.add_argument("-p", "--path", type=Path, default=SUPPRESS, help="download directory (CWD by default)")
     download_parser.add_argument("-f", "--force", default=False, action="store_true", help="overwrite duplicates, if any")
     download_parser.add_argument("--checksum", type=str, default=SUPPRESS, help="expected MD5 checksum value for integrity test")
+    download_parser.add_argument("--hash", type=str, default=SUPPRESS, help="checksum algorithm")
 
     return parser

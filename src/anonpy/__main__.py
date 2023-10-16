@@ -1,36 +1,47 @@
 #!/usr/bin/env python3
 
-import difflib
 import json
-import subprocess
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from colorama import Fore, Style, deinit, just_fix_windows_console
+from cryptography.hazmat.primitives.hashes import HashAlgorithm
 from requests.exceptions import HTTPError
 from rich.json import JSON
 from rich.panel import Panel
 
 from .anonpy import AnonPy, Endpoint
 from .cli import build_parser
-from .internals import ConfigHandler, LogLevel, RequestHandler, __credits__, __package__, __version__, console, get_resource_path, join_url, read_file, str2bool
-from .security import MD5, Checksum
+from .internals import (
+    ConfigHandler,
+    LogLevel,
+    RequestHandler,
+    __credits__,
+    __package__,
+    __version__,
+    console,
+    copy_to_clipboard,
+    get_resource_path,
+    print_diff,
+    read_file,
+    str2bool
+)
+from .security import Checksum, MD5, SHA1, SHA256, BLAKE2b
 
 #region helpers
 
 type EvalConfig = Dict[str, Dict[str, Optional[Any]]]
 
-def print_diff(a: str, b: str) -> None:
-        diff = difflib.ndiff(
-            f"{a}\n".splitlines(keepends=True),
-            f"{b}\n".splitlines(keepends=True)
-        )
+def str_to_hash_algorithm(val: str) -> Optional[HashAlgorithm]:
+    algorithm = val.upper()
 
-        console.print("".join(diff), end="")
-
-def copy_to_clipboard(text: str) -> None:
-    subprocess.run("clip", input=text, check=True, encoding="utf-8")
+    match algorithm:
+        case "MD5": return MD5
+        case "SHA1": return SHA1
+        case "SHA256": return SHA256
+        case "BLAKE2B": return BLAKE2b
+        case _: raise NotImplementedError(f"unsupported hash algorithm ({algorithm=})")
 
 def init_config(cfg_path: Path) -> None:
     """
@@ -46,6 +57,10 @@ def init_config(cfg_path: Path) -> None:
             "log_level": LogLevel.INFO.value,
             "verbose": True,
             "force": False,
+        })
+
+        config_handler.add_section("security", settings={
+            "hash": "sha256",
         })
 
         config_handler.add_section("server", settings={
@@ -71,6 +86,9 @@ def eval_config(args: Namespace, config: ConfigHandler) -> EvalConfig:
             "log_level": config.get_option("client", "log_level"),
             "verbose": getattr(args, "verbose", config.get_option("client", "verbose")),
             "force": getattr(args, "force", config.get_option("client", "force")),
+        },
+        "security": {
+            "hash": str_to_hash_algorithm(getattr(args, "hash", config.get_option("security", "hash", default="sha256"))),
         },
         "server": {
             "api": config.get_option("server", "api"),
@@ -100,6 +118,7 @@ def preview(anon: AnonPy, args: Namespace, settings: EvalConfig) -> None:
 
 def upload(anon: AnonPy, args: Namespace, settings: EvalConfig) -> None:
     client = settings["client"]
+    security = settings["security"]
 
     for file in args.file:
         upload = anon.upload(file, enable_progressbar=client["verbose"])
@@ -110,12 +129,14 @@ def upload(anon: AnonPy, args: Namespace, settings: EvalConfig) -> None:
         if args.clip: copy_to_clipboard(url)
 
         if not client["verbose"]: continue
-        computed_hash = Checksum.compute(path=file, algorithm=MD5)
+        algorithm: HashAlgorithm = security["hash"]
+        computed_hash = Checksum.compute(path=file, algorithm=algorithm)
         checksum = Checksum.hash2string(computed_hash)
-        console.print(f"MD5=[bold blue]{checksum}[/]")
+        console.print(f"{algorithm.name}=[bold blue]{checksum}[/]")
 
 def download(anon: AnonPy, args: Namespace, settings: EvalConfig) -> None:
     client = settings["client"]
+    security = settings["security"]
 
     for resource in (args.resource or read_file(args.batch_file)):
         with console.status("fetching data...") as _:
@@ -134,10 +155,12 @@ def download(anon: AnonPy, args: Namespace, settings: EvalConfig) -> None:
         console.print(f"PATH=[bold blue]{str(full_path)}[/]")
 
         if getattr(args, "checksum", None) is None: continue
-        computed_hash = Checksum.compute(path=name, algorithm=MD5)
+
+        algorithm: HashAlgorithm = security["hash"]
+        computed_hash = Checksum.compute(path=full_path, algorithm=algorithm)
         computed_checksum = Checksum.hash2string(computed_hash)
 
-        if client["verbose"]: console.print(f"MD5={computed_checksum}")
+        if client["verbose"]: console.print(f"{algorithm.name}={computed_checksum}")
 
         expected_checksum = args.checksum
         corrupt = computed_checksum.lower() != expected_checksum.lower()
@@ -172,6 +195,11 @@ def main() -> None:
     config = ConfigHandler(getattr(args, "config", module_folder / cfg_file))
     config.read()
 
+    if args.reset_config:
+        config.path.unlink(missing_ok=True)
+        init_config(config.path)
+        return
+
     settings = eval_config(args, config)
     kwargs = {
         k: v for k, v in settings["client"].items()
@@ -186,11 +214,6 @@ def main() -> None:
 
     if args.gui:
         console.print("[bold red]ERROR:[/] This feature is not implemented yet, see also: https://github.com/Advanced-Systems/anonpy/discussions/11")
-        return
-
-    if args.reset_config:
-        config.path.unlink(missing_ok=True)
-        init_config(config.path)
         return
 
     try:

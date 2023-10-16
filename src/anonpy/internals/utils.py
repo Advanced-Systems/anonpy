@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import ast
+import difflib
 import functools
 import os
 import platform
+import subprocess
 import textwrap
 import warnings
 from pathlib import Path
@@ -107,6 +109,23 @@ def read_file(path: Union[str, Path]) -> Iterator[str]:
     """
     with open(path, mode="r", encoding="utf-8") as file_handler:
         yield (line.rstrip() for line in file_handler.readlines() if line[0] != "#")
+
+def print_diff(a: str, b: str, console: Console) -> None:
+    """
+    Print difference between two strings to `console`.
+    """
+    diff = difflib.ndiff(
+        f"{a}\n".splitlines(keepends=True),
+        f"{b}\n".splitlines(keepends=True)
+    )
+
+    console.print("".join(diff), end="")
+
+def copy_to_clipboard(text: str) -> None:
+    """
+    Copy the passed text to clipboard.
+    """
+    subprocess.run("clip", input=text, check=True, encoding="utf-8")
 
 def get_progress_bar() -> Progress:
     """
