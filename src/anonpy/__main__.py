@@ -172,12 +172,13 @@ def main() -> None:
             case "download":
                 download(provider, args, config)
             case _:
-                raise NotImplementedError()
+                # argparse prints the help manual and exits if there are any
+                # errors on parsing, so there's no need to handle this case
+                # here as it will accomplish nothing
+                pass
 
     except KeyboardInterrupt:
         pass
-    except NotImplementedError:
-        parser.print_help()
     except HTTPError as http_error:
         provider.logger.error("ERROR: Request failed with HTTP status code %d (%s)" % (http_error.response.status_code, http_error.response.text), stacklevel=2)
         console.print(http_error.response.text, style="bold red")
