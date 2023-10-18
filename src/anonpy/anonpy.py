@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Self, Union, overload
 
 from .endpoint import Endpoint
 from .internals import LogHandler, LogLevel, RequestHandler, Timeout, __package__, get_progress_bar, join_url, truncate
+from .server_response import ServerResponse
 
 
 class AnonPy(RequestHandler):
@@ -80,7 +81,7 @@ class AnonPy(RequestHandler):
         self.enable_logging = enable_logging
         self.logger = LogHandler(level=LogLevel.INFO)
 
-    def upload(self: Self, path: Union[str, Path], enable_progressbar: bool=False) -> Dict:
+    def upload(self: Self, path: Union[str, Path], enable_progressbar: bool=False) -> ServerResponse:
         """
         Upload a file. Set `enable_progressbar` to `True` to enable a terminal
         progress indicator.
@@ -115,13 +116,13 @@ class AnonPy(RequestHandler):
 
         self.logger.info("Upload %s to %s", name, url, hide=not self.enable_logging, stacklevel=2)
 
-        return {
-            "name": name,
-            "folder": path,
-            "size": size,
-            "resource": resource,
-            "url": url,
-        }
+        return ServerResponse(
+            name,
+            path,
+            size,
+            resource,
+            url,
+        )
 
     def preview(self: Self, resource: str) -> Dict:
         """
@@ -164,7 +165,7 @@ class AnonPy(RequestHandler):
             enable_progressbar: bool=False,
             size: Optional[int]=None,
             name: Optional[str]=None,
-        ) -> Dict:
+        ) -> ServerResponse:
         if enable_progressbar and (size is None or name is None):
             raise TypeError("invalid combination of arguments")
 
@@ -187,10 +188,10 @@ class AnonPy(RequestHandler):
 
         self.logger.info("Download %s to %s", url, full_path, hide=not self.enable_logging, stacklevel=2)
 
-        return {
-            "name": name,
-            "folder": path,
-            "size": size,
-            "resource": resource,
-            "url": url,
-        }
+        return ServerResponse(
+            name,
+            path,
+            size,
+            resource,
+            url,
+        )

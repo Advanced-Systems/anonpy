@@ -122,11 +122,10 @@ def upload(anon: AnonPy, args: Namespace, settings: EvalConfig) -> None:
 
     for file in args.file:
         upload = anon.upload(file, enable_progressbar=client["verbose"])
-        url = upload["url"]
-        anon.logger.info("Uploaded %s to %s" % (file, url))
-        console.print(f"URL={url}")
+        anon.logger.info("Uploaded %s to %s" % (file, upload.url))
+        console.print(f"URL={upload.url}")
 
-        if args.clip: copy_to_clipboard(url)
+        if args.clip: copy_to_clipboard(upload.url)
 
         if not client["verbose"]: continue
         algorithm: HashAlgorithm = security["hash"]
