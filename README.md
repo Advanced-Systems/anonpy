@@ -41,9 +41,6 @@ page.
 
 ## Installation
 
-> ⚠ It is currently not possible to install this library with `pip` yet, but
-> you may install the release candidate for testing purposes.
-
 `anonpy` is available on PyPI:
 
 ```powershell
