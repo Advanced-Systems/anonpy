@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 
 import ast
+import difflib
 import functools
 import os
 import platform
+import subprocess
+import textwrap
 import warnings
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 
+from rich.console import Console
+from rich.progress import BarColumn, DownloadColumn, Progress, TextColumn, TimeRemainingColumn, TransferSpeedColumn
+
+console = Console(color_system="256")
 
 def convert(value: str) -> Optional[Any]:
     """
@@ -59,7 +66,7 @@ def join_url(url: str, *paths) -> str:
     """
     Join a relative list of paths with a URL.
     """
-    return functools.reduce(lambda u, p: f"{u}/{p}", [url, *paths])
+    return functools.reduce(lambda u, p: f"{u.rstrip("/")}/{p.lstrip("/")}", [url, *paths])
 
 def get_while(dict_: Dict, default: Any, *keys: str) -> Any:
     """
@@ -86,6 +93,15 @@ def str2bool(val: str) -> bool:
     """
     return val.lower() in ("yes", "y", "true", "t", "1", "on", "")
 
+def truncate(text: str, width: int, placeholder: str="...") -> str:
+    """
+    Reduce the given text with a placeholder to fit in the given width.
+    """
+    stripped = text.strip()
+    if len(stripped) <= width: return stripped
+
+    return textwrap.shorten(stripped, width, placeholder=placeholder)
+
 def read_file(path: Union[str, Path]) -> Iterator[str]:
     """
     Open a text file and returns its right-striped content line by line, except
@@ -94,26 +110,36 @@ def read_file(path: Union[str, Path]) -> Iterator[str]:
     with open(path, mode="r", encoding="utf-8") as file_handler:
         yield (line.rstrip() for line in file_handler.readlines() if line[0] != "#")
 
-def _progressbar_options(
-        iterable: Iterable,
-        desc: str,
-        unit: str,
-        color: str="\033[32m",
-        char: str="\u25CB",
-        total: int=None,
-        disable: bool=False
-    ) -> Dict:
+def print_diff(a: str, b: str, console: Console) -> None:
     """
-    Return custom optional arguments for `tqdm` progressbars.
+    Print difference between two strings to `console`.
     """
-    return {
-        "iterable": iterable,
-        "bar_format": "{l_bar}%s{bar}%s{r_bar}" % (color, "\033[0m"),
-        "ascii": char.rjust(9, " "),
-        "desc": desc,
-        "unit": unit.rjust(1, " "),
-        "unit_scale": True,
-        "unit_divisor": 1024,
-        "total": len(iterable) if total is None else total,
-        "disable": not disable
-    }
+    diff = difflib.ndiff(
+        f"{a}\n".splitlines(keepends=True),
+        f"{b}\n".splitlines(keepends=True)
+    )
+
+    console.print("".join(diff), end="")
+
+def copy_to_clipboard(text: str) -> None:
+    """
+    Copy the passed text to clipboard.
+    """
+    subprocess.run("clip", input=text, check=True, encoding="utf-8")
+
+def get_progress_bar() -> Progress:
+    """
+    Return a `rich` progress bar. This configuration expects a `name` property
+    to be initialized with the `add_task` method.
+    """
+    return Progress(
+        TextColumn("[bold blue]{task.fields[name]}", justify="right"),
+        BarColumn(bar_width=None),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        "•",
+        DownloadColumn(),
+        "•",
+        TransferSpeedColumn(),
+        "•",
+        TimeRemainingColumn(),
+    )

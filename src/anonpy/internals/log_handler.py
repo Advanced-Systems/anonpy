@@ -6,7 +6,9 @@ import sys
 from enum import Enum, unique
 from logging import FileHandler, Formatter, StreamHandler, getLogger
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Self, TypedDict, Union, Unpack
+from typing import Any, Dict, List, Literal, Mapping, Optional, Self, Tuple, TypedDict, Union, Unpack
+
+from rich.logging import RichHandler
 
 from .csv_formatter import CsvFormatter
 from .json_formatter import JsonFormatter
@@ -79,7 +81,7 @@ class LogHandler:
 
     def add_handler(
             self: Self,
-            name: Optional[Union[str, Path]]=None,
+            name: Tuple[Union[str, Path], Literal["console", "rich_console"]]=None,
             layout: Optional[Union[str, Dict[str,str]]]=None
         ) -> Self:
         """
@@ -88,7 +90,7 @@ class LogHandler:
 
         Note that plain log files or console logs should define the layout as a `str`.
         """
-        target = Path(name).suffix if name is not None else "console"
+        target = Path(name).suffix if name not in ("console", "rich_console") else name
         default_layout = "%(asctime)s [%(levelname)s] %(pathname)s@%(lineno)d - %(message)s"
         default_structured_layout = {
             "timestamp": "asctime",
@@ -105,6 +107,11 @@ class LogHandler:
                 self.formatter = CsvFormatter(fmt_dict=layout or default_structured_layout)
             case ".json":
                 self.formatter = JsonFormatter(fmt_dict=layout or default_structured_layout)
+            case "rich_console":
+                rich_handler = RichHandler(rich_tracebacks=True)
+                self.handlers["rich_console"] = rich_handler
+                self.__logger.addHandler(rich_handler)
+                return self
             case "console":
                 console = StreamHandler(sys.stdout)
                 self.formatter = Formatter(default_layout or layout)

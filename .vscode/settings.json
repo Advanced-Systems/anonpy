@@ -21,9 +21,11 @@
         "getproxies",
         "Greve",
         "kanban",
+        "keepends",
         "levelname",
         "pipx",
         "tqdm",
+        "tracebacks",
         "urandom"
     ]
 }
