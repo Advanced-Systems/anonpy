@@ -35,10 +35,6 @@ uploading and downloading files. It implements an extensible provider-independen
 class system and also comes with an intuitive CLI or lightweight GUI for interactive
 usage.
 
-> ⚠ This project is still a work in progress. Keep an eye on the
-> [Roadmap](https://github.com/Advanced-Systems/anonpy/milestone/1),
-> which documents the progress path toward the first major release.
-
 Documentation for this project is located on the GitHub
 [Wiki](https://github.com/Advanced-Systems/anonpy/wiki)
 page.

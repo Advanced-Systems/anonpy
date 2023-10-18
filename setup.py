@@ -16,7 +16,7 @@ print("processing setup function")
 
 setup(
     name="anonpy",
-    version="1.0.0-rc.2",
+    version="1.0.0",
     license="MIT",
     author="Stefan Greve",
     author_email="greve.stefan@outlook.jp",
@@ -28,7 +28,9 @@ setup(
     url="https://github.com/advanced-systems/anonpy",
     project_urls={
         "Source Code": "https://github.com/advanced-systems/anonpy",
-        "Bug Reports": "https://github.com/advanced-systems/anonpy/issues"
+        "Bug Reports": "https://github.com/advanced-systems/anonpy/issues",
+        "Documentation": "https://github.com/advanced-systems/anonpy/wiki",
+        "Changelog": "https://github.com/advanced-systems/anonpy/blob/master/README.md"
     },
     python_requires=">=3.12",
     install_requires=read_file("requirements/release.txt", split=True),
