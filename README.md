@@ -47,7 +47,9 @@ page.
 pip install anonpy
 ```
 
-Release candidates (preview versions) of this library can be installed with:
+Release candidates
+([preview versions](https://test.pypi.org/project/anonpy/))
+of this library can be installed with:
 
 ```powershell
 pip install -i https://test.pypi.org/simple/ anonpy
@@ -78,11 +80,11 @@ preview = anon.preview("LNcXZ9UM")
 print(f"{preview=}")
 
 # download a resource to the current working directory
-download = anon.download("LNcXZ9UM", progressbar=True)
+download = anon.download("LNcXZ9UM", enable_progressbar=True)
 print(f"{download=}")
 
 # upload a file
-upload = anon.upload("homework.docx", progressbar=True)
+upload = anon.upload("homework.docx", enable_progressbar=True)
 print(f"{upload=}")
 ```
 
